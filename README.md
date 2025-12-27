@@ -58,8 +58,6 @@ Cada agenda es un contenedor completo con todas las herramientas:
 
 ## 📝 Notas
 
-<img align="right" width="300" src="https://via.placeholder.com/300x200/1e293b/f8fafc?text=Notes+Preview" alt="Notes">
-
 - **Crear notas** con título y contenido
 - **Organizar en carpetas** con arrastrar y soltar
 - **Búsqueda en tiempo real** por título o contenido
@@ -297,12 +295,6 @@ Requiere soporte para:
 - CSS Custom Properties
 - LocalStorage
 - ES Modules
-
----
-
-## 📄 Licencia
-
-Este proyecto es de uso personal. Todos los derechos reservados.
 
 ---
 
