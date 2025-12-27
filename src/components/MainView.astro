@@ -1,0 +1,46 @@
+---
+// MainView.astro
+import WorkspaceSelector from './WorkspaceSelector.astro';
+import AgendaView from './AgendaView.astro';
+---
+
+<div id="main-view">
+  <div id="view-workspace-selector" class="view-shell">
+    <WorkspaceSelector />
+  </div>
+  
+  <!-- The AgendaView now handles its own internal "Dashboard vs Detail" switching -->
+  <div id="view-dashboard" class="view-shell hidden">
+     <AgendaView />
+  </div>
+</div>
+
+<script>
+  import { store } from '../lib/store.js';
+
+  const viewSelector = document.getElementById('view-workspace-selector');
+  const viewDashboard = document.getElementById('view-dashboard');
+
+  store.subscribe((state) => {
+    // Top Level Routing: Do we have an active workspace?
+    if (state.activeWorkspaceId) {
+        viewSelector.classList.add('hidden');
+        viewDashboard.classList.remove('hidden');
+    } else {
+        viewSelector.classList.remove('hidden');
+        viewDashboard.classList.add('hidden');
+    }
+  });
+</script>
+
+<style>
+#main-view {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+.view-shell {
+    width: 100%;
+    height: 100%;
+}
+</style>

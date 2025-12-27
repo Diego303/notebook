@@ -1,0 +1,404 @@
+---
+---
+<div class="metrics-container animate-fade-in">
+    <div class="metrics-header">
+        <h2 class="section-title">Estadísticas de Productividad</h2>
+        <span class="refresh-badge" id="last-updated">Recién</span>
+    </div>
+
+    <!-- 1. High-Level Summary -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="icon-box purple">📝</div>
+            <div class="summary-info">
+                <span class="summary-val" id="total-notes">0</span>
+                <span class="summary-label">Total Notas</span>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="icon-box green">✅</div>
+            <div class="summary-info">
+                <span class="summary-val" id="total-tasks-done">0</span>
+                <span class="summary-label">Tareas Hechas</span>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="icon-box blue">📖</div>
+            <div class="summary-info">
+                <span class="summary-val" id="total-journal-entries">0</span>
+                <span class="summary-label">Entradas Journal</span>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="icon-box orange">💻</div>
+            <div class="summary-info">
+                <span class="summary-val" id="total-snippets">0</span>
+                <span class="summary-label">Snippets</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Charts Section -->
+    <div class="charts-grid">
+        <!-- Task Status Distribution (Bar Chart) -->
+        <div class="chart-card">
+            <h3>Distribución de Tareas</h3>
+            <div class="chart-containerbar" id="tasks-chart">
+                <!-- Bars injected via JS -->
+            </div>
+            <div class="chart-legend" id="tasks-legend">
+                <!-- Legend -->
+            </div>
+        </div>
+
+        <!-- Snippet Languages (Pie/Donut) -->
+        <div class="chart-card">
+            <h3>Lenguajes de Snippets</h3>
+            <div class="chart-flex-center">
+                <div class="pie-chart" id="snip-pie"></div>
+                <div class="chart-legend-side" id="snip-legend"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Auto-Calculated Metrics -->
+    <h3 class="section-subtitle">Métricas Automáticas</h3>
+    <div class="trackers-grid">
+        <div class="tracker-card" id="card-completion-rate">
+            <div class="tracker-header">
+                <span>📊 Tasa de Completado</span>
+            </div>
+            <div class="tracker-val" id="val-completion-rate">0%</div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-completion"></div></div>
+        </div>
+
+        <div class="tracker-card" id="card-active-tasks">
+            <div class="tracker-header">
+                <span>⚡ Tareas Activas</span>
+            </div>
+            <div class="tracker-val" id="val-active-tasks">0</div>
+            <div class="tracker-detail" id="detail-active">En progreso ahora</div>
+        </div>
+
+        <div class="tracker-card" id="card-backlog">
+            <div class="tracker-header">
+                <span>📋 Backlog Pendiente</span>
+            </div>
+            <div class="tracker-val" id="val-backlog">0</div>
+            <div class="tracker-detail" id="detail-backlog">Tareas por iniciar</div>
+        </div>
+
+        <div class="tracker-card" id="card-overdue">
+            <div class="tracker-header">
+                <span>⏰ Tareas Atrasadas</span>
+            </div>
+            <div class="tracker-val" id="val-overdue">0</div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-overdue" style="background:#ef4444;"></div></div>
+        </div>
+
+        <div class="tracker-card" id="card-journal-words">
+            <div class="tracker-header">
+                <span>✍️ Palabras en Journal</span>
+            </div>
+            <div class="tracker-val" id="val-journal-words">0</div>
+            <div class="tracker-detail">Total palabras escritas</div>
+        </div>
+
+        <div class="tracker-card" id="card-week-activity">
+            <div class="tracker-header">
+                <span>📅 Actividad (7 días)</span>
+            </div>
+            <div class="tracker-val" id="val-week-activity">0</div>
+            <div class="tracker-detail" id="detail-week">Elementos creados</div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .metrics-container { 
+        padding: 2rem; 
+        background: var(--color-bg-base); 
+        height: 100%; 
+        overflow-y: auto; 
+        color: var(--color-text-main);
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .metrics-container::-webkit-scrollbar { 
+        display: none; 
+    }
+    
+    .metrics-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .refresh-badge { font-size: 0.8rem; color: var(--color-text-muted); background: var(--color-bg-card); padding: 4px 8px; border-radius: 4px; }
+
+    /* Summaries */
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .summary-card { background: var(--color-bg-card); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--color-border); display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-card); }
+    
+    .icon-box { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: var(--color-border); }
+    .icon-box.purple { background: var(--color-primary-light, rgba(99, 102, 241, 0.2)); color: var(--color-primary); }
+    .icon-box.green { background: rgba(16, 185, 129, 0.2); color: var(--color-success); }
+    .icon-box.blue { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .icon-box.orange { background: rgba(249, 115, 22, 0.2); color: #fb923c; }
+
+    .summary-info { display: flex; flex-direction: column; }
+    .summary-val { font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
+    .summary-label { font-size: 0.85rem; color: var(--color-text-muted); }
+
+    /* Charts */
+    .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+    .chart-card { background: var(--color-bg-card); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--color-border); display: flex; flex-direction: column; }
+    .chart-card h3 { margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--color-text-main); }
+
+    /* Bar Chart */
+    .chart-containerbar { display: flex; align-items: flex-end; justify-content: space-around; height: 150px; padding-bottom: 10px; border-bottom: 1px solid var(--color-border); gap: 1rem; }
+    .bar-group { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; flex: 1; }
+    .bar { width: 40px; border-radius: 6px 6px 0 0; position: relative; transition: height 0.5s ease; min-height: 4px; }
+    .bar-label { font-size: 0.8rem; color: var(--color-text-muted); text-transform: capitalize; }
+    .bar-val { font-size: 0.8rem; font-weight: bold; margin-bottom: 4px; }
+    
+    /* Pie Chart */
+    .chart-flex-center { display: flex; align-items: center; justify-content: center; gap: 2rem; height: 100%; }
+    .pie-chart {
+        width: 140px; height: 140px; border-radius: 50%;
+        background: conic-gradient(var(--color-border) 0% 100%);
+        position: relative;
+    }
+    .pie-chart::after {
+        content: ''; position: absolute; inset: 20px; background: var(--color-bg-card); border-radius: 50%;
+    }
+    .chart-legend-side { display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem; color: var(--color-text-main); }
+    .legend-item { display: flex; align-items: center; gap: 0.5rem; }
+    .dot { width: 10px; height: 10px; border-radius: 2px; }
+
+    /* Trackers */
+    .section-subtitle { margin-bottom: 1.5rem; color: var(--color-text-main); font-size: 1.2rem; }
+    .trackers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+    .tracker-card { background: var(--color-bg-card); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--color-border); }
+    .tracker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; color: var(--color-text-muted); font-size: 0.9rem; font-weight: 600; }
+    .tracker-val { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
+    
+    .progress-bar-bg { width: 100%; height: 8px; background: var(--color-border); border-radius: 99px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--color-primary); width: 0%; transition: width 0.5s ease; border-radius: 99px; }
+
+    .tracker-detail { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.25rem; }
+
+    @media (max-width: 768px) {
+        .chart-flex-center { flex-direction: column; }
+        .summary-grid, .charts-grid, .trackers-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    import { store } from '../lib/store.js';
+
+    let activeAgendaId = null;
+
+    // Elements
+    const els = {
+        totalNotes: document.getElementById('total-notes'),
+        totalTasksDone: document.getElementById('total-tasks-done'),
+        totalJournal: document.getElementById('total-journal-entries'),
+        totalSnips: document.getElementById('total-snippets'),
+        
+        tasksChart: document.getElementById('tasks-chart'),
+        
+        snipPie: document.getElementById('snip-pie'),
+        snipLegend: document.getElementById('snip-legend'),
+        
+        // Auto metrics
+        valCompletionRate: document.getElementById('val-completion-rate'),
+        progCompletion: document.getElementById('prog-completion'),
+        valActiveTasks: document.getElementById('val-active-tasks'),
+        valBacklog: document.getElementById('val-backlog'),
+        valOverdue: document.getElementById('val-overdue'),
+        progOverdue: document.getElementById('prog-overdue'),
+        valJournalWords: document.getElementById('val-journal-words'),
+        valWeekActivity: document.getElementById('val-week-activity'),
+        
+        lastUpdated: document.getElementById('last-updated')
+    };
+
+    function render(state) {
+        if (!state.activeAgendaId) return;
+        activeAgendaId = state.activeAgendaId;
+
+        const ws = state.workspaces.find(w => w.id === state.activeWorkspaceId);
+        if (!ws) return;
+        const agenda = ws.agendas.find(a => a.id === activeAgendaId);
+        if (!agenda) return;
+
+        // 1. Summaries
+        const notes = agenda.notes || [];
+        const tasks = agenda.tasks || [];
+        const journals = agenda.journals || (agenda.journal ? [{entries: agenda.journal}] : []);
+        const snippets = agenda.snippets || [];
+        
+        els.totalNotes.innerText = notes.filter(n => !n.isFolder).length;
+        
+        // Count done tasks properly (checking columnId 'done')
+        const doneCount = tasks.filter(t => t.columnId === 'done').length;
+        const doingCount = tasks.filter(t => t.columnId === 'doing').length;
+        const todoCount = tasks.filter(t => t.columnId === 'todo').length;
+        const backlogCount = tasks.filter(t => t.columnId === 'backlog').length;
+        
+        els.totalTasksDone.innerText = doneCount;
+        
+        // Count total journal entries across all journals
+        const totalEntries = journals.reduce((acc, j) => acc + (j.entries ? j.entries.length : 0), 0);
+        els.totalJournal.innerText = totalEntries;
+        
+        els.totalSnips.innerText = snippets.length;
+
+        // 2. Task Chart (Todo vs Doing vs Done)
+        renderTaskChart(tasks);
+
+        // 3. Snippet Pie Chart
+        renderSnippetChart(snippets);
+
+        // 4. Auto Metrics
+        renderAutoMetrics(tasks, notes, journals, snippets);
+        
+        els.lastUpdated.innerText = "Actualizado " + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    }
+
+    function renderAutoMetrics(tasks, notes, journals, snippets) {
+        // Completion Rate
+        const activeTasks = tasks.filter(t => ['todo', 'doing', 'done'].includes(t.columnId));
+        const doneCount = activeTasks.filter(t => t.columnId === 'done').length;
+        const totalActive = activeTasks.length;
+        const completionRate = totalActive > 0 ? Math.round((doneCount / totalActive) * 100) : 0;
+        els.valCompletionRate.innerText = completionRate + '%';
+        els.progCompletion.style.width = completionRate + '%';
+        els.progCompletion.style.background = completionRate >= 70 ? '#10b981' : completionRate >= 40 ? '#f59e0b' : '#6366f1';
+
+        // Active Tasks (doing)
+        const doingCount = tasks.filter(t => t.columnId === 'doing').length;
+        els.valActiveTasks.innerText = doingCount;
+
+        // Backlog
+        const backlogCount = tasks.filter(t => t.columnId === 'backlog').length;
+        els.valBacklog.innerText = backlogCount;
+
+        // Overdue Tasks
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const overdueTasks = tasks.filter(t => {
+            if (!t.dueDate || t.columnId === 'done' || t.isFinalized || t.isDeleted) return false;
+            const due = new Date(t.dueDate);
+            due.setHours(0, 0, 0, 0);
+            return due < today;
+        });
+        els.valOverdue.innerText = overdueTasks.length;
+        const overdueRatio = totalActive > 0 ? Math.min(100, (overdueTasks.length / totalActive) * 100) : 0;
+        els.progOverdue.style.width = overdueRatio + '%';
+
+        // Journal Words
+        let totalWords = 0;
+        journals.forEach(j => {
+            if (j.entries) {
+                j.entries.forEach(e => {
+                    if (e.text) totalWords += e.text.split(/\s+/).filter(w => w.length > 0).length;
+                });
+            }
+        });
+        els.valJournalWords.innerText = totalWords.toLocaleString();
+
+        // Week Activity (notes, tasks, journal entries created in last 7 days)
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        
+        let weekItems = 0;
+        notes.forEach(n => {
+            if (n.createdAt && new Date(n.createdAt) >= weekAgo) weekItems++;
+        });
+        tasks.forEach(t => {
+            if (t.createdAt && new Date(t.createdAt) >= weekAgo) weekItems++;
+        });
+        journals.forEach(j => {
+            if (j.entries) {
+                j.entries.forEach(e => {
+                    if (e.createdAt && new Date(e.createdAt) >= weekAgo) weekItems++;
+                });
+            }
+        });
+        els.valWeekActivity.innerText = weekItems;
+    }
+
+    function renderTaskChart(tasks) {
+        // Group by status
+        const counts = { todo: 0, doing: 0, done: 0 };
+        tasks.forEach(t => {
+            if(counts[t.columnId] !== undefined) counts[t.columnId]++;
+            else if (t.columnId !== 'backlog' && !t.isFinalized && !t.isDeleted) counts.todo++; // fallback
+        });
+        
+        const total = Math.max(1, tasks.length);
+        const maxVal = Math.max(counts.todo, counts.doing, counts.done, 1); // for scaling height relative to max
+        
+        const colors = { todo: '#94a3b8', doing: '#60a5fa', done: '#10b981' };
+        
+        const html = Object.keys(counts).map(key => {
+            const val = counts[key];
+            const pct = (val / maxVal) * 100; // Height relative to max item
+            const color = colors[key];
+            return `
+                <div class="bar-group">
+                    <span class="bar-val">${val}</span>
+                    <div class="bar" style="height: ${pct}%; background: ${color}"></div>
+                    <span class="bar-label">${key}</span>
+                </div>
+            `;
+        }).join('');
+        
+        els.tasksChart.innerHTML = html;
+    }
+
+    function renderSnippetChart(snippets) {
+        if(snippets.length === 0) {
+            els.snipPie.style.background = '#334155';
+            els.snipLegend.innerHTML = '<span style="opacity:0.5">Sin datos</span>';
+            return;
+        }
+
+        const langs = {};
+        snippets.forEach(s => {
+            const l = s.language || 'Text';
+            langs[l] = (langs[l] || 0) + 1;
+        });
+        
+        // Sort by count
+        const sorted = Object.entries(langs).sort((a,b) => b[1] - a[1]);
+        const total = snippets.length;
+        
+        // Generate Conic Gradient
+        let currentDeg = 0;
+        const palette = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
+        
+        const gradientParts = sorted.map((item, i) => {
+            const [label, count] = item;
+            const deg = (count / total) * 360;
+            const color = palette[i % palette.length];
+            const start = currentDeg;
+            currentDeg += deg;
+            return `${color} ${start}deg ${currentDeg}deg`;
+        });
+        
+        els.snipPie.style.background = `conic-gradient(${gradientParts.join(', ')})`;
+        
+        // Legend
+        els.snipLegend.innerHTML = sorted.map((item, i) => {
+            const color = palette[i % palette.length];
+            return `
+                <div class="legend-item">
+                    <div class="dot" style="background: ${color}"></div>
+                    <span>${item[0]} (${item[1]})</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    store.subscribe(render);
+</script>

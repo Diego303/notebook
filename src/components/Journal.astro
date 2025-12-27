@@ -1,0 +1,593 @@
+---
+---
+<div class="journal-container">
+    <div class="journal-input-section">
+        <textarea id="journal-input" placeholder="¿En qué has trabajado? (decisiones, problemas, ideas...)" class="journal-area"></textarea>
+        <button id="btn-add-journal" class="btn btn-primary">Registrar Entrada</button>
+    </div>
+    
+    <div class="journal-header-area">
+        <div class="header-left-cluster">
+            <h2 id="journal-title" class="journal-title">Journal Principal</h2>
+            <div id="filters-container" class="filters-container hidden-filters">
+                <input type="text" id="journal-search-input" placeholder="Buscar texto..." class="filter-input" />
+                <input type="date" id="journal-date-filter" class="filter-input filter-date" title="Filtrar por fecha" />
+                <button id="btn-clear-filters" class="btn-clear-filters" title="Limpiar filtros">✕</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline Wrapper -->
+    <div id="journal-timeline" class="journal-timeline">
+        <div id="timeline-track" class="timeline-track">
+            <!-- Entries injected here -->
+        </div>
+    </div>
+    
+    <!-- Floating Control Panel -->
+    <div class="journal-controls-panel">
+        <button id="btn-toggle-search" class="control-btn" title="Filtros">🔍</button>
+        <button id="btn-toggle-date" class="control-btn" title="Filtrar por fecha">📅</button>
+        <div class="sep"></div>
+        <div class="nav-cluster">
+            <button id="btn-prev-journal" class="control-btn" title="Anterior">↑</button> 
+            <button id="btn-next-journal" class="control-btn" title="Siguiente">↓</button>
+        </div>
+        <div class="sep"></div>
+        <div class="manage-cluster">
+            <button id="btn-new-journal" class="control-btn major" title="Nuevo Journal">+</button>
+            <button id="btn-rename-journal" class="control-btn" title="Renombrar Journal">✎</button>
+            <button id="btn-delete-journal" class="control-btn danger" title="Eliminar Journal">🗑</button>
+        </div>
+    </div>
+
+    <!-- Entry View Modal -->
+    <dialog id="entry-view-modal" class="entry-modal">
+        <div class="entry-modal-content">
+            <div class="entry-modal-header">
+                <span id="modal-entry-date" class="modal-entry-date"></span>
+                <div class="modal-actions">
+                    <button id="btn-copy-entry" class="btn btn-ghost btn-sm" title="Copiar">📋 Copiar</button>
+                    <button id="btn-close-modal" class="btn btn-ghost btn-sm">✕</button>
+                </div>
+            </div>
+            <div id="modal-entry-content" class="modal-entry-content"></div>
+        </div>
+    </dialog>
+</div>
+
+<style>
+    .journal-container { 
+        padding: 2rem; max-width: 800px; margin: 0 auto; color: var(--color-text-main); 
+        height: 100%; display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    
+    .journal-header-area {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 1rem;
+        min-height: 40px;
+    }
+    .header-left-cluster { display: flex; align-items: center; gap: 1rem; flex: 1; flex-wrap: wrap; }
+    
+    .journal-title { margin: 0; font-size: 1.5rem; color: var(--color-text-main); font-weight: 700; opacity: 0.9; }
+    
+    /* Filters Container */
+    .filters-container { 
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        overflow: hidden; 
+        transition: max-width 0.3s ease, opacity 0.3s ease; 
+        max-width: 0; opacity: 0;
+    }
+    .filters-container:not(.hidden-filters) { max-width: 400px; opacity: 1; }
+    
+    .filter-input {
+        padding: 6px 12px; 
+        border-radius: 99px; 
+        border: 1px solid var(--color-border); 
+        background: var(--color-bg-card); 
+        color: var(--color-text-main); 
+        outline: none;
+        font-size: 0.9rem;
+    }
+    .filter-input:focus { border-color: var(--color-primary); }
+    
+    #journal-search-input { width: 140px; }
+    .filter-date { width: 140px; }
+    .filter-date::-webkit-calendar-picker-indicator {
+        filter: invert(0.5);
+        cursor: pointer;
+    }
+    
+    .btn-clear-filters {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        border: 1px solid var(--color-border);
+        background: var(--color-bg-elevated);
+        color: var(--color-text-muted);
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+    }
+    .btn-clear-filters:hover { 
+        background: var(--color-danger); 
+        color: white; 
+        border-color: var(--color-danger); 
+    }
+
+    .journal-input-section { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; flex-shrink: 0; }
+    .journal-area { 
+        width: 100%; height: 100px; background: var(--color-bg-card); border: 1px solid var(--color-border); 
+        border-radius: 12px; padding: 1rem; color: var(--color-text-main); resize: none; font-family: inherit;
+    }
+    .journal-area:focus { outline: none; border-color: var(--color-primary); }
+    
+    .journal-timeline { 
+        flex: 1; overflow-y: auto; padding-bottom: 2rem;
+        scrollbar-width: none; 
+        position: relative;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        padding-right: 60px;
+    }
+    .journal-timeline.slide-out-left { opacity: 0; transform: translateX(-20px); }
+    .journal-timeline.slide-in-right { opacity: 0; transform: translateX(20px); }
+    
+    .journal-timeline::-webkit-scrollbar { display: none; }
+    
+    .timeline-track {
+        position: relative;
+        padding-left: 3rem;
+        min-height: 100%;
+        margin-top: 1rem;
+    }
+    .timeline-track::before {
+        content: ''; position: absolute; top: 0; bottom: 0; left: 1rem; width: 2px; background: var(--color-border);
+    }
+    
+    /* CONTROL PANEL */
+    .journal-controls-panel {
+        position: absolute;
+        top: 240px; 
+        right: 0;
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border);
+        border-radius: 12px 0 0 12px; 
+        border-right: none; 
+        padding: 12px 6px;
+        display: flex; flex-direction: column; gap: 8px;
+        box-shadow: var(--shadow-card);
+        z-index: 50;
+        align-items: center;
+        width: 50px;
+    }
+    
+    .sep { width: 80%; height: 1px; background: var(--color-border); }
+    
+    .nav-cluster, .manage-cluster { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+    
+    .control-btn {
+        width: 36px; height: 36px;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s;
+        font-size: 1.1rem;
+    }
+    .control-btn:hover { background: var(--color-bg-elevated); color: var(--color-text-main); }
+    .control-btn.active { background: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary); }
+    .control-btn.major { background: var(--color-primary); color: var(--color-text-inverted, white); box-shadow: var(--shadow-card); }
+    .control-btn.major:hover { background: var(--color-primary-hover); }
+    .control-btn.danger:hover { color: var(--color-danger); background: rgba(239, 68, 68, 0.1); }
+
+    /* Entry View Modal */
+    .entry-modal {
+        max-width: 700px;
+        width: 90%;
+        max-height: 80vh;
+        background: transparent;
+        border: none;
+        padding: 0;
+        margin: auto;
+    }
+    .entry-modal::backdrop {
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+    }
+    .entry-modal-content {
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border);
+        border-radius: 16px;
+        box-shadow: var(--shadow-hover);
+        display: flex;
+        flex-direction: column;
+        max-height: 80vh;
+        overflow: hidden;
+    }
+    .entry-modal-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--color-bg-elevated);
+        border-radius: 16px 16px 0 0;
+    }
+    .modal-entry-date {
+        font-size: 0.9rem;
+        color: var(--color-text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .modal-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .modal-entry-content {
+        padding: 1.5rem;
+        overflow-y: auto;
+        color: var(--color-text-main);
+        line-height: 1.8;
+        font-size: 1.05rem;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        /* Hide scrollbar but keep functionality */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .modal-entry-content::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .filters-container:not(.hidden-filters) { max-width: 100%; flex-wrap: wrap; }
+        #journal-search-input, .filter-date { width: 100%; }
+        .header-left-cluster { flex-direction: column; align-items: flex-start; }
+        .journal-controls-panel { top: auto; bottom: 80px; }
+    }
+</style>
+
+<script>
+    import { store } from '../lib/store.js';
+    import { JournalActions } from '../lib/actions/journal.js';
+
+    const input = document.getElementById('journal-input');
+    const btn = document.getElementById('btn-add-journal');
+    const track = document.getElementById('timeline-track');
+    const timelineContainer = document.getElementById('journal-timeline');
+    const titleEl = document.getElementById('journal-title');
+    
+    // Filters
+    const searchInput = document.getElementById('journal-search-input');
+    const dateFilter = document.getElementById('journal-date-filter');
+    const filtersContainer = document.getElementById('filters-container');
+    const btnSearch = document.getElementById('btn-toggle-search');
+    const btnDate = document.getElementById('btn-toggle-date');
+    const btnClearFilters = document.getElementById('btn-clear-filters');
+    
+    // Navigation
+    const btnPrev = document.getElementById('btn-prev-journal');
+    const btnNext = document.getElementById('btn-next-journal');
+    
+    // Management
+    const btnNew = document.getElementById('btn-new-journal');
+    const btnRename = document.getElementById('btn-rename-journal');
+    const btnDelete = document.getElementById('btn-delete-journal');
+
+    // Entry Modal
+    const entryModal = document.getElementById('entry-view-modal');
+    const modalDate = document.getElementById('modal-entry-date');
+    const modalContent = document.getElementById('modal-entry-content');
+    const btnCopyEntry = document.getElementById('btn-copy-entry');
+    const btnCloseModal = document.getElementById('btn-close-modal');
+
+    let activeAgendaId = null;
+    let currentJournalId = null; 
+    let journalsCache = [];
+    let currentViewedEntry = null;
+    
+    // Toggle filters panel
+    function toggleFilters() {
+        filtersContainer.classList.toggle('hidden-filters');
+        const isOpen = !filtersContainer.classList.contains('hidden-filters');
+        btnSearch.classList.toggle('active', isOpen);
+        btnDate.classList.toggle('active', isOpen);
+        if (isOpen) {
+            searchInput.focus();
+        }
+    }
+
+    btnSearch.addEventListener('click', toggleFilters);
+    btnDate.addEventListener('click', () => {
+        toggleFilters();
+        if (!filtersContainer.classList.contains('hidden-filters')) {
+            dateFilter.focus();
+        }
+    });
+
+    // Clear all filters
+    btnClearFilters.addEventListener('click', () => {
+        searchInput.value = '';
+        dateFilter.value = '';
+        renderEntries();
+    });
+
+    // Re-render on filter change
+    searchInput.addEventListener('input', () => renderEntries());
+    dateFilter.addEventListener('change', () => renderEntries());
+
+    // Entry Modal Events
+    btnCloseModal.addEventListener('click', () => entryModal.close());
+    entryModal.addEventListener('click', (e) => {
+        if (e.target === entryModal) entryModal.close();
+    });
+    
+    btnCopyEntry.addEventListener('click', () => {
+        if (currentViewedEntry) {
+            navigator.clipboard.writeText(currentViewedEntry.text).then(() => {
+                btnCopyEntry.textContent = '✓ Copiado';
+                setTimeout(() => { btnCopyEntry.innerHTML = '📋 Copiar'; }, 2000);
+            });
+        }
+    });
+
+    function openEntryModal(entry) {
+        currentViewedEntry = entry;
+        const date = new Date(entry.createdAt);
+        const dateStr = date.toLocaleDateString(undefined, { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        modalDate.textContent = dateStr;
+        modalContent.textContent = entry.text;
+        entryModal.showModal();
+    }
+
+    // Journal Management
+    btnNew.addEventListener('click', () => {
+         const name = prompt("Nombre del Nuevo Journal:", "Registro Diario");
+         if(name && activeAgendaId) {
+             JournalActions.createJournal(activeAgendaId, name);
+         }
+    });
+    
+    btnRename.addEventListener('click', () => {
+        const journal = journalsCache.find(j => j.id === currentJournalId);
+        if(!journal || !activeAgendaId) return;
+        const newName = prompt("Renombrar Journal:", journal.name);
+        if(newName && newName !== journal.name) {
+            JournalActions.renameJournal(activeAgendaId, currentJournalId, newName);
+        }
+    });
+    
+    btnDelete.addEventListener('click', () => {
+        if(!activeAgendaId || !currentJournalId) return;
+        if(journalsCache.length <= 1) {
+            alert("No se puede eliminar el único journal.");
+            return;
+        }
+        if(confirm("¿Eliminar este journal y todas sus entradas?")) {
+            JournalActions.deleteJournal(activeAgendaId, currentJournalId);
+        }
+    });
+
+    btnPrev.addEventListener('click', () => switchJournal(-1));
+    btnNext.addEventListener('click', () => switchJournal(1));
+
+    btn.addEventListener('click', () => {
+        if(activeAgendaId && input.value.trim()) {
+            JournalActions.addEntry(activeAgendaId, input.value, currentJournalId);
+            input.value = '';
+        }
+    });
+
+    // Shortcut: Ctrl+Enter to submit
+    input.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            btn.click();
+        }
+    });
+
+    function switchJournal(direction) {
+        if (journalsCache.length <= 1) return;
+        
+        const idx = journalsCache.findIndex(j => j.id === currentJournalId);
+        let newIdx = idx + direction;
+        
+        // Loop
+        if (newIdx < 0) newIdx = journalsCache.length - 1;
+        if (newIdx >= journalsCache.length) newIdx = 0;
+        
+        const nextJournal = journalsCache[newIdx];
+        
+        // Animation
+        timelineContainer.style.opacity = '0';
+        timelineContainer.style.transform = direction > 0 ? 'translateX(-20px)' : 'translateX(20px)';
+        
+        setTimeout(() => {
+            currentJournalId = nextJournal.id;
+            updateJournalView();
+            
+            timelineContainer.style.transition = 'none';
+            timelineContainer.style.transform = direction > 0 ? 'translateX(20px)' : 'translateX(-20px)';
+            
+            requestAnimationFrame(() => {
+                timelineContainer.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                timelineContainer.style.opacity = '1';
+                timelineContainer.style.transform = 'translateX(0)';
+            });
+        }, 200);
+    }
+
+    function render(state) {
+        if(!state.activeAgendaId) return;
+        activeAgendaId = state.activeAgendaId;
+        const ws = state.workspaces.find(w => w.id === state.activeWorkspaceId);
+        if(!ws) return;
+        const agenda = ws.agendas.find(a => a.id === activeAgendaId);
+        if(!agenda) return;
+
+        let journals = agenda.journals || [];
+        if (!agenda.journals && agenda.journal) {
+            journals = [{ id: 'default', name: 'Journal Principal', entries: agenda.journal }];
+        } else if(journals.length === 0) {
+             journals = [{ id: 'default', name: 'Journal Principal', entries: [] }];
+        }
+        
+        journalsCache = journals;
+
+        if (!currentJournalId || !journals.find(j => j.id === currentJournalId)) {
+            currentJournalId = journals[0].id;
+        }
+
+        updateJournalView();
+    }
+    
+    function updateJournalView() {
+        const journal = journalsCache.find(j => j.id === currentJournalId);
+        if(!journal) return;
+        
+        titleEl.innerText = journal.name;
+        renderEntries(journal.entries);
+    }
+
+    function renderEntries(entriesOverride = null) {
+        const journal = journalsCache.find(j => j.id === currentJournalId);
+        let entries = entriesOverride || (journal ? journal.entries : []);
+        
+        // Text Search Filter
+        const textQuery = searchInput.value.toLowerCase().trim();
+        if(textQuery) {
+            entries = entries.filter(e => 
+                e.text.toLowerCase().includes(textQuery)
+            );
+        }
+
+        // Date Filter
+        const dateQuery = dateFilter.value;
+        if(dateQuery) {
+            const filterDate = new Date(dateQuery);
+            entries = entries.filter(e => {
+                const entryDate = new Date(e.createdAt);
+                return entryDate.toDateString() === filterDate.toDateString();
+            });
+        }
+
+        track.innerHTML = '';
+        
+        // Sort DESC
+        const sorted = [...entries].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        if (sorted.length === 0 && (textQuery || dateQuery)) {
+            track.innerHTML = `
+                <div class="no-results">
+                    <span style="font-size: 2rem; opacity: 0.5;">🔍</span>
+                    <p style="color: var(--color-text-muted); margin-top: 0.5rem;">No se encontraron entradas</p>
+                </div>
+            `;
+            return;
+        }
+        
+        sorted.forEach(entry => {
+            const date = new Date(entry.createdAt);
+            const dateStr = date.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+            
+            const item = document.createElement('div');
+            item.className = 'timeline-item animate-fade-in';
+            item.innerHTML = `
+                <div class="timeline-dot"></div>
+                <div class="timeline-date">${dateStr}</div>
+                <div class="timeline-content-preview">${entry.text.replace(/\n/g, '<br>')}</div>
+                <button class="btn-del-entry" title="Eliminar">×</button>
+            `;
+            
+            // Click on entry to view full
+            item.addEventListener('click', (e) => {
+                if (!e.target.closest('.btn-del-entry')) {
+                    openEntryModal(entry);
+                }
+            });
+            
+            item.querySelector('.btn-del-entry').addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(confirm('¿Eliminar entrada?')) JournalActions.deleteEntry(activeAgendaId, entry.id, currentJournalId);
+            });
+            
+            track.appendChild(item);
+        });
+    }
+    
+    store.subscribe(render);
+</script>
+
+<style is:global>
+    .timeline-item { 
+        position: relative; 
+        background: var(--color-bg-card); 
+        padding: 1.5rem; 
+        border-radius: 12px; 
+        border: 1px solid var(--color-border); 
+        margin-left: 0; 
+        margin-bottom: 2rem; 
+        cursor: pointer;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .timeline-item:hover {
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-hover);
+    }
+    
+    .timeline-dot { 
+        position: absolute; 
+        left: calc(-2rem - 6px); 
+        top: 1.5rem;
+        width: 14px; height: 14px; 
+        background: var(--color-primary); border-radius: 50%; 
+        box-shadow: 0 0 0 4px var(--color-bg-base); 
+        z-index: 10;
+    }
+    .timeline-date { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+    .timeline-content-preview { 
+        color: var(--color-text-main); 
+        line-height: 1.6; 
+        display: -webkit-box;
+        -webkit-line-clamp: 5;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .btn-del-entry { 
+        position: absolute; 
+        top: 1rem; 
+        right: 1rem; 
+        background: transparent; 
+        border: none; 
+        color: var(--color-text-muted); 
+        font-size: 1.2rem; 
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s, color 0.2s;
+    }
+    .timeline-item:hover .btn-del-entry { opacity: 1; }
+    .btn-del-entry:hover { color: var(--color-danger); }
+
+    .no-results {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        text-align: center;
+    }
+</style>
+

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Personal Notebook</title>
+		<!-- Theme initialization to prevent flash -->
+		<script is:inline>
+			(function() {
+				const theme = localStorage.getItem('notebook_theme');
+				// Dark is default (no data-theme needed), only set for other themes
+				if (theme && theme !== 'dark') {
+					document.documentElement.setAttribute('data-theme', theme);
+				}
+			})();
+		</script>
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>
+
+<style is:global>
+	@import "../styles/global.css";
+</style>

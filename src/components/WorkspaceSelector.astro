@@ -1,0 +1,356 @@
+---
+// WorkspaceSelector.astro
+---
+
+<div id="workspace-selector" class="centered-view animate-fade-in">
+  <!-- Theme Selector Panel -->
+  <div class="theme-panel" id="theme-panel">
+    <span class="theme-label">🎨</span>
+    <div class="theme-options">
+      <button class="theme-btn" data-theme="dark" title="Oscuro (Default)">
+        <span class="theme-dot" style="background: linear-gradient(135deg, #818cf8, #0f172a);"></span>
+      </button>
+      <button class="theme-btn" data-theme="light" title="Claro">
+        <span class="theme-dot" style="background: linear-gradient(135deg, #4f46e5, #f8fafc);"></span>
+      </button>
+      <button class="theme-btn" data-theme="ocean" title="Océano">
+        <span class="theme-dot" style="background: linear-gradient(135deg, #0284c7, #f0f9ff);"></span>
+      </button>
+      <button class="theme-btn" data-theme="pastel" title="Pastel">
+        <span class="theme-dot" style="background: linear-gradient(135deg, #7c3aed, #faf5ff);"></span>
+      </button>
+      <button class="theme-btn" data-theme="ruby" title="Rubí">
+        <span class="theme-dot" style="background: linear-gradient(135deg, #fb7185, #18181b);"></span>
+      </button>
+      <button class="theme-btn" data-theme="forest" title="Bosque">
+        <span class="theme-dot" style="background: linear-gradient(135deg, #4ade80, #052e16);"></span>
+      </button>
+      <button class="theme-btn" data-theme="sunset" title="Atardecer">
+        <span class="theme-dot" style="background: linear-gradient(135deg, #ea580c, #fffbeb);"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="ws-intro">
+    <h1>Bienvenido de nuevo</h1>
+    <p class="subtitle">Selecciona un workspace para continuar</p>
+  </div>
+
+  <div class="actions-bar">
+    <button id="btn-create-workspace" class="btn btn-primary">
+        <span class="icon">+</span> Nuevo Workspace
+    </button>
+    <div class="divider"></div>
+     <input type="file" id="import-file-input" accept=".json" class="hidden" />
+    <button id="btn-import" class="btn btn-secondary btn-sm">Importar</button>
+    <button id="btn-export" class="btn btn-secondary btn-sm">Exportar</button>
+  </div>
+
+  <div id="workspace-list" class="grid-cards">
+    <!-- Workspaces injected here -->
+  </div>
+  
+  <p id="empty-state-msg" class="empty-state hidden">
+      No hay workspaces. ¡Crea el primero arriba!
+  </p>
+
+  <!-- Modal -->
+  <dialog id="workspace-dialog" class="modal">
+    <form method="dialog">
+      <h2 id="dialog-title">Nuevo Workspace</h2>
+      <input type="text" id="workspace-name-input" placeholder="ej. Personal, Trabajo, Proyecto X" required autocomplete="off" />
+      <div class="modal-actions">
+        <button value="cancel" class="btn btn-ghost" formnovalidate>Cancelar</button>
+        <button id="btn-confirm-save" value="save" class="btn btn-primary">Crear Workspace</button>
+      </div>
+    </form>
+  </dialog>
+</div>
+
+<style>
+  .ws-intro h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--color-text-main);
+      margin-bottom: var(--spacing-sm);
+  }
+
+  .subtitle {
+      color: var(--color-text-muted);
+      font-size: 1.1rem;
+      margin-bottom: var(--spacing-lg);
+  }
+
+  @media (max-width: 768px) {
+      .ws-intro h1 { font-size: 1.75rem; }
+      .subtitle { font-size: 1rem; }
+      .actions-bar { 
+          flex-direction: column; 
+          width: 100%; 
+          gap: var(--spacing-sm);
+          padding: var(--spacing-md);
+      }
+      .divider { display: none; }
+      .theme-panel {
+          top: var(--spacing-sm);
+          right: var(--spacing-sm);
+      }
+  }
+
+  .actions-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-xl);
+      padding: var(--spacing-sm);
+  }
+
+  .btn-secondary {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      box-shadow: var(--shadow-sm);
+  }
+  .btn-secondary:hover {
+      background: var(--color-bg-base);
+      color: var(--color-text-main);
+      border-color: var(--color-text-muted);
+  }
+
+  .divider {
+      width: 1px;
+      height: 24px;
+      background: var(--color-border);
+  }
+  
+  .empty-state {
+      font-size: 1.1rem;
+      color: var(--color-text-muted);
+      margin-top: var(--spacing-xl);
+      font-style: italic;
+  }
+
+  .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-sm);
+  }
+  
+  #dialog-title {
+      color: var(--color-text-main);
+  }
+
+  /* Theme Selector Panel */
+  .theme-panel {
+      position: fixed;
+      top: var(--spacing-lg);
+      right: var(--spacing-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      background: var(--color-bg-card);
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-full);
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--color-border);
+      z-index: 100;
+  }
+
+  .theme-label {
+      font-size: 1rem;
+      user-select: none;
+  }
+
+  .theme-options {
+      display: flex;
+      gap: 6px;
+  }
+
+  .theme-btn {
+      background: none;
+      border: 2px solid transparent;
+      padding: 2px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+
+  .theme-btn:hover {
+      transform: scale(1.15);
+  }
+
+  .theme-btn.active {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px var(--color-primary-light, rgba(99, 102, 241, 0.2));
+  }
+
+  .theme-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: block;
+      box-shadow: inset 0 -2px 4px rgba(0,0,0,0.1);
+  }
+</style>
+
+<script>
+  import { store } from '../lib/store.js';
+  import { WorkspaceActions } from '../lib/actions/workspaces.js';
+  import { exportData, parseImportData } from '../lib/persistence.js';
+
+  // ============================================
+  // THEME MANAGEMENT
+  // ============================================
+  const THEME_KEY = 'notebook_theme';
+  const themeButtons = document.querySelectorAll('.theme-btn');
+  
+  function setTheme(themeName) {
+    // 'dark' is default (no data-theme attribute needed for default)
+    if (!themeName || themeName === 'dark') {
+      document.documentElement.removeAttribute('data-theme');
+      themeName = 'dark';
+    } else {
+      document.documentElement.setAttribute('data-theme', themeName);
+    }
+    localStorage.setItem(THEME_KEY, themeName);
+    
+    // Update active state
+    themeButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.theme === themeName);
+    });
+  }
+  
+  // Initialize theme from localStorage
+  function initTheme() {
+    const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+    setTheme(savedTheme);
+  }
+  
+  // Theme button click handlers
+  themeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      setTheme(btn.dataset.theme);
+    });
+  });
+  
+  // Initialize theme immediately
+  initTheme();
+
+  // ============================================
+  // WORKSPACE MANAGEMENT
+  // ============================================
+  const listContainer = document.getElementById('workspace-list');
+  const emptyMsg = document.getElementById('empty-state-msg');
+  
+  const createBtn = document.getElementById('btn-create-workspace');
+  const btnExport = document.getElementById('btn-export');
+  const btnImport = document.getElementById('btn-import');
+  const fileInput = document.getElementById('import-file-input');
+  
+  const dialog = document.getElementById('workspace-dialog');
+  const nameInput = document.getElementById('workspace-name-input');
+  const confirmBtn = document.getElementById('btn-confirm-save');
+
+  let editingId = null;
+
+  function render(state) {
+    const workspaces = state.workspaces || [];
+    listContainer.innerHTML = '';
+    
+    if (workspaces.length === 0) {
+        emptyMsg.classList.remove('hidden');
+    } else {
+        emptyMsg.classList.add('hidden');
+        
+        workspaces.forEach(ws => {
+            const card = document.createElement('div');
+            card.className = 'card animate-fade-in';
+            card.style.display = 'flex';
+            card.style.flexDirection = 'column';
+            card.style.justifyContent = 'space-between';
+            card.style.minHeight = '140px';
+            
+            const dateStr = new Date(ws.modifiedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            
+            card.innerHTML = `
+                <div>
+                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">${ws.name}</h3>
+                    <p style="color: var(--color-text-muted); font-size: 0.875rem;">Última actividad ${dateStr}</p>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+                    <button class="btn btn-ghost btn-sm btn-rename" title="Renombrar">✏️</button>
+                    <button class="btn btn-danger btn-sm btn-delete" title="Eliminar">🗑️</button>
+                </div>
+            `;
+            
+            // Click on card body to select
+            card.addEventListener('click', (e) => {
+                 // Ignore clicks on buttons
+                if (e.target.closest('button')) return;
+                WorkspaceActions.selectWorkspace(ws.id);
+            });
+
+            // Action Buttons
+            card.querySelector('.btn-rename').addEventListener('click', () => openModal(ws.id, ws.name));
+            card.querySelector('.btn-delete').addEventListener('click', () => {
+                if(confirm('¿Eliminar workspace?')) WorkspaceActions.deleteWorkspace(ws.id);
+            });
+
+            listContainer.appendChild(card);
+        });
+    }
+  }
+
+  function openModal(id = null, currentName = '') {
+    editingId = id;
+    nameInput.value = currentName;
+    document.getElementById('dialog-title').innerText = id ? 'Renombrar Workspace' : 'Nuevo Workspace';
+    dialog.showModal();
+    // setTimeout(() => nameInput.focus(), 0); // Focus bug in some browsers
+  }
+
+  // Enter key support
+  nameInput.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') {
+          e.preventDefault();
+          confirmBtn.click();
+      }
+  });
+
+  createBtn.addEventListener('click', () => openModal());
+
+  confirmBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const name = nameInput.value;
+    if (name) {
+        if (editingId) WorkspaceActions.renameWorkspace(editingId, name);
+        else WorkspaceActions.createWorkspace(name);
+        dialog.close();
+    }
+  });
+
+  // Import/Export
+  btnExport.addEventListener('click', () => exportData(store.getState()));
+  btnImport.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+          try {
+              const newState = parseImportData(ev.target.result);
+              store.update(() => newState);
+              alert('Importación exitosa');
+              fileInput.value = '';
+          } catch(err) { alert(err.message); }
+      };
+      reader.readAsText(file);
+  });
+
+  store.subscribe(render);
+  store.init();
+</script>
