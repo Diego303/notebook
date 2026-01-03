@@ -16,8 +16,13 @@
     </div>
 
     <!-- The Wall -->
-    <div id="note-wall" class="masonry-grid">
-        <!-- Notes/Folders injected here -->
+    <div class="split-layout">
+        <div id="folders-column" class="folders-column hidden">
+            <!-- Folders here -->
+        </div>
+        <div id="notes-column" class="masonry-grid">
+            <!-- Notes here -->
+        </div>
     </div>
     
     <div id="notes-empty-state" class="empty-state hidden">
@@ -42,6 +47,41 @@
             </form>
         </div>
     </dialog>
+    <!-- Modal Folder (Create/Rename) -->
+    <dialog id="folder-dialog" class="modal">
+        <form method="dialog">
+            <h2 id="folder-dialog-title">Nueva Carpeta</h2>
+            <input type="text" id="folder-name-input" placeholder="Nombre de la carpeta" required autocomplete="off" />
+            <div class="modal-actions">
+                <button value="cancel" class="btn btn-ghost" formnovalidate>Cancelar</button>
+                <button id="btn-save-folder" value="save" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Modal Delete Folder -->
+    <dialog id="delete-folder-dialog" class="modal">
+        <form method="dialog">
+            <h2>¿Eliminar Carpeta?</h2>
+            <p style="margin-bottom: 1.5rem; color: var(--color-text-muted);">Se eliminará la carpeta <b id="del-folder-name"></b> y todas las notas que contiene.</p>
+            <div class="modal-actions">
+                <button value="cancel" class="btn btn-ghost">Cancelar</button>
+                <button id="btn-confirm-delete-folder" value="delete" class="btn btn-danger">Eliminar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Modal Delete Note -->
+    <dialog id="delete-note-dialog" class="modal">
+        <form method="dialog">
+            <h2>¿Eliminar Nota?</h2>
+            <p style="margin-bottom: 1.5rem; color: var(--color-text-muted);">Esta acción no se puede deshacer.</p>
+            <div class="modal-actions">
+                <button value="cancel" class="btn btn-ghost">Cancelar</button>
+                <button id="btn-confirm-delete-note" value="delete" class="btn btn-danger">Eliminar</button>
+            </div>
+        </form>
+    </dialog>
 </div>
 
 </style>
@@ -56,16 +96,50 @@
     .note-wall-container {
         padding: var(--spacing-xl);
         height: 100%;
-        overflow-y: auto;
+        overflow-y: hidden; /* Changed to hidden to handle inner scroll */
         background-color: var(--color-bg-base); 
         color: var(--color-text-main);
         display: flex; flex-direction: column;
+    }
+
+    /* Modal Styling - REUSED */
+    .modal {
+        margin: auto;
+        padding: 1.5rem;
+        border: 1px solid var(--color-border);
+        border-radius: 16px;
+        background: var(--color-bg-card);
+        box-shadow: var(--shadow-card);
+        max-width: 400px;
+        width: 90%;
+        color: var(--color-text-main);
+    }
+    .modal::backdrop {
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+    }
+    .modal[open] {
+        animation: fade-in 0.2s ease-out;
+    }
+    .modal h2 {
+        color: var(--color-text-main);
+    }
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-sm);
+    }
+    .note-modal {
+        /* Override specifically for the note editor which is larger */
+        max-width: 650px;
     }
 
     .note-header {
         display: flex; justify-content: space-between; align-items: center;
         margin-bottom: 2rem;
         gap: 1rem;
+        flex-shrink: 0;
     }
     
     .breadcrumbs {
@@ -95,12 +169,54 @@
     
     .big-add-btn { padding-left: 1.5rem; padding-right: 1.5rem; border-radius: 99px; }
 
-    /* Wall Items */
+    /* New Split Views */
+    .split-layout {
+        display: flex;
+        gap: 2rem;
+        flex: 1;
+        overflow: hidden;
+        height: 100%;
+        align-items: flex-start;
+    }
+
+    .folders-column {
+        width: 280px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        overflow-y: auto;
+        height: 100%;
+        padding-right: 0.5rem; /* Space for scrollbar */
+        padding-bottom: 1rem;
+        scrollbar-width: none; /* Hide scrollbar Firefox */
+    }
+    
+    .folders-column::-webkit-scrollbar {
+        display: none; /* Hide scrollbar Chrome/Safari */
+    }
+
+    .folders-column.hidden {
+        display: none;
+    }
+
     .masonry-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        grid-auto-rows: max-content; /* Ensure rows fit content */
         gap: 1.5rem; 
         flex: 1;
+        width: 100%;
+        overflow-y: auto;
+        height: 100%;
+        padding-bottom: 2rem;
+        align-content: start;
+        padding-right: 0.5rem; /* Symmetry */
+        scrollbar-width: none;
+    }
+    
+    .masonry-grid::-webkit-scrollbar {
+        display: none;
     }
 
     /* USE GLOBAL CARD STYLE + Specific Overrides */
@@ -114,6 +230,11 @@
         cursor: pointer;
     }
 
+    /* Only folders (in flex column) need flex-shrink prevention */
+    .folder-card {
+        flex-shrink: 0;
+    }
+
     .note-card:hover, .folder-card:hover { 
         transform: translateY(-4px); 
         box-shadow: var(--shadow-hover) !important;
@@ -122,26 +243,27 @@
     
     .folder-card {
         justify-content: center; align-items: center;
-        min-height: 140px; 
+        min-height: 80px; /* Smaller items for column list */
         background-color: var(--color-bg-base) !important; 
         border-style: dashed !important;
         border-color: var(--color-border) !important;
+        width: 100%; /* Full width of column */
     }
     
-    .folder-icon { font-size: 2.5rem; margin-bottom: 0.5rem; pointer-events: none; }
-    .folder-name { font-weight: 700; font-size: 1.1rem; color: var(--color-text-main); text-align: center; pointer-events: none; }
+    .folder-icon { font-size: 1.8rem; margin-bottom: 0.2rem; pointer-events: none; }
+    .folder-name { font-weight: 700; font-size: 1rem; color: var(--color-text-main); text-align: center; pointer-events: none; }
     
     .folder-actions { 
         position: absolute; 
-        bottom: 12px; right: 12px; 
+        bottom: 8px; right: 8px; 
         display: none; 
-        gap: 8px; 
+        gap: 4px; 
         z-index: 10;
     }
     .folder-card:hover .folder-actions { display: flex; }
     
     .btn-icon-sm { 
-        width: 32px; height: 32px; 
+        width: 28px; height: 28px; 
         display: flex; align-items: center; justify-content: center;
         background: var(--color-bg-card); 
         backdrop-filter: blur(4px);
@@ -150,7 +272,7 @@
         color: var(--color-text-muted); 
         cursor: pointer; 
         transition: all 0.2s;
-        font-size: 1rem;
+        font-size: 0.8rem;
         padding: 0;
     }
     .btn-icon-sm:hover { 
@@ -170,7 +292,7 @@
 
     .empty-state { text-align: center; margin-top: 5rem; opacity: 0.6; color: var(--color-text-muted); }
 
-    dialog.note-modal { max-width: 650px; width: 100%; padding: 0; background: transparent; overflow: visible; border: none; }
+    dialog.note-modal { padding: 0; background: transparent; overflow: visible; border: none; }
     .note-edit-form { height: 75vh; background: var(--color-bg-card); border-radius: 16px; display: flex; flex-direction: column; box-shadow: var(--shadow-hover); border: 1px solid var(--color-border); }
     .edit-header { padding: 24px 32px 16px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; }
     .title-input { flex: 1; font-size: 1.5rem; font-weight: 800; border: none; background: transparent; padding: 0; margin-right: 1.5rem; color: var(--color-text-main); }
@@ -181,24 +303,48 @@
     .status-indicator { color: var(--color-text-muted); }
     .btn-danger-icon { color: var(--color-danger); }
     .btn-danger-icon:hover { background: rgba(239, 68, 68, 0.1); }
+    
+    @media (max-width: 768px) {
+        .split-layout { flex-direction: column; gap: 1rem; }
+        .folders-column { width: 100%; max-height: 200px; padding-bottom: 5px; overflow-x: auto; flex-direction: row; }
+        .folder-card { width: 140px; min-height: 100px; flex-shrink: 0; }
+    }
 </style>
 
 <script>
     import { store } from '../lib/store.js';
     import { NoteActions } from '../lib/actions/notes.js';
 
-    const wall = document.getElementById('note-wall');
+    // Containers
+    const foldersCol = document.getElementById('folders-column');
+    const notesCol = document.getElementById('notes-column');
     const emptyState = document.getElementById('notes-empty-state');
+    
+    // Controls
     const searchInput = document.getElementById('note-search');
     const btnCreate = document.getElementById('btn-create-note');
     const btnCreateFolder = document.getElementById('btn-create-folder'); 
     const breadcrumbsContainer = document.getElementById('breadcrumbs');
     
+    // Modals
     const dialog = document.getElementById('note-edit-dialog');
     const titleIn = document.getElementById('note-title-input');
     const contentIn = document.getElementById('note-content-input');
     const status = document.getElementById('save-status');
     const btnDelete = document.getElementById('btn-delete-note');
+
+    // New Modals
+    const folderDialog = document.getElementById('folder-dialog');
+    const folderTitle = document.getElementById('folder-dialog-title');
+    const folderInput = document.getElementById('folder-name-input');
+    const btnSaveFolder = document.getElementById('btn-save-folder');
+
+    const delFolderDialog = document.getElementById('delete-folder-dialog');
+    const btnConfirmDelFolder = document.getElementById('btn-confirm-delete-folder');
+    const delFolderNameDisplay = document.getElementById('del-folder-name');
+
+    const delNoteDialog = document.getElementById('delete-note-dialog');
+    const btnConfirmDelNote = document.getElementById('btn-confirm-delete-note');
 
     let currentNoteId = null;
     let autoSaveTimer = null;
@@ -206,6 +352,8 @@
     
     // FOLDER STATE
     let currentFolderId = null; 
+    let editingFolderId = null;
+    let deletingFolderId = null;
 
     function render(state) {
         if (!state.activeAgendaId) return;
@@ -226,115 +374,132 @@
         let displayItems = [];
         
         if (filter) {
-            // FLAT SEARCH: Search everything, ignore folders for now or show matched folders?
-            // Usually searching notes is the priority.
-            // Let's search items where (type=note|folder) AND (title matches or content matches)
+            // FLAT SEARCH
             displayItems = allNotes.filter(n => {
                 const matchTitle = n.title && n.title.toLowerCase().includes(filter);
                 const matchContent = (n.content && n.type !== 'folder') && n.content.toLowerCase().includes(filter);
                 return matchTitle || matchContent;
             });
-            // In search mode, we might want to show path? For now simple list.
         } else {
             // FOLDER VIEW: Filter by parentId
             displayItems = allNotes.filter(n => {
-                // If item has no parentId, it's root (null).
-                // Equality check:
                 return (n.parentId || null) === currentFolderId;
             });
         }
 
-        wall.innerHTML = '';
+        // CLEAR BOTH
+        foldersCol.innerHTML = '';
+        notesCol.innerHTML = '';
         
+        const folderItems = displayItems.filter(i => i.type === 'folder');
+        const noteItems = displayItems.filter(i => i.type !== 'folder');
+        
+        // Sort
+        folderItems.sort((a,b) => a.title.localeCompare(b.title)); // Folders alpha
+        noteItems.sort((a,b) => new Date(b.modifiedAt) - new Date(a.modifiedAt)); // Notes by date
+
+        // Visibility Logic
         if (displayItems.length === 0) {
             emptyState.classList.remove('hidden');
+            foldersCol.classList.add('hidden');
         } else {
             emptyState.classList.add('hidden');
             
-            // Sort: Folders first, then Notes. Then by Date.
-            displayItems.sort((a,b) => {
-                if (a.type === 'folder' && b.type !== 'folder') return -1;
-                if (a.type !== 'folder' && b.type === 'folder') return 1;
-                return new Date(b.modifiedAt) - new Date(a.modifiedAt);
-            });
+            // Show/Hide Folders Col
+            if(folderItems.length === 0) {
+                 foldersCol.classList.add('hidden');
+            } else {
+                 foldersCol.classList.remove('hidden');
+                 folderItems.forEach(item => {
+                     const card = createCard(item, true);
+                     foldersCol.appendChild(card);
+                 });
+            }
             
-            displayItems.forEach(item => {
-                const isFolder = item.type === 'folder';
-                const card = document.createElement('div');
-                card.draggable = true; // For DnD
-                card.dataset.id = item.id;
-                card.dataset.type = item.type || 'note';
-                
-                if (isFolder) {
-                    // Folder Card
-                    card.className = 'card folder-card animate-fade-in droptarget';
-                    card.innerHTML = `
-                        <div class="folder-icon">📁</div>
-                        <div class="folder-name">${item.title}</div>
-                        <div class="folder-actions">
-                             <button class="btn-icon-sm btn-edit-folder" title="Renombrar">✎</button>
-                             <button class="btn-icon-sm btn-del-folder" title="Eliminar">🗑</button>
-                        </div>
-                    `;
-                    
-                    // Folder click -> Enter
-                    card.addEventListener('click', (e) => {
-                        if(e.target.closest('button')) return; // ignore actions
-                        currentFolderId = item.id;
-                        render(store.getState());
-                    });
-                    
-                    // DnD Events for Folder (Target)
-                    card.addEventListener('dragover', (e) => {
-                        e.preventDefault();
-                        card.style.borderColor = '#6366f1';
-                    });
-                    card.addEventListener('dragleave', () => {
-                        card.style.borderColor = '';
-                    });
-                    card.addEventListener('drop', (e) => {
-                         e.preventDefault();
-                         card.style.borderColor = '';
-                         const draggedId = e.dataTransfer.getData('text/plain');
-                         if(draggedId && draggedId !== item.id) {
-                             NoteActions.moveItem(activeAgendaId, draggedId, item.id);
-                         }
-                    });
-
-                    // Rename
-                    const btnRename = card.querySelector('.btn-edit-folder');
-                    btnRename.addEventListener('click', () => {
-                         const newName = prompt('Renombrar carpeta:', item.title);
-                         if(newName) NoteActions.updateNote(activeAgendaId, item.id, { title: newName });
-                    });
-                    
-                    // Delete
-                    const btnDel = card.querySelector('.btn-del-folder');
-                    btnDel.addEventListener('click', () => {
-                         if(confirm(`¿Eliminar carpeta "${item.title}" y todo su contenido?`)) {
-                             NoteActions.deleteItem(activeAgendaId, item.id);
-                         }
-                    });
-
-                } else {
-                    // Note Card
-                    card.className = 'card note-card animate-fade-in';
-                    const prev = item.content || '';
-                    card.innerHTML = `
-                       ${item.title ? `<div class="card-title">${item.title}</div>` : ''}
-                       <div class="card-preview">${prev || '<span style="opacity:0.4; font-style:italic">Nota vacía</span>'}</div>
-                    `;
-                    card.addEventListener('click', () => openEditor(item));
-                }
-                
-                // Drag Start
-                card.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', item.id);
-                });
-
-                wall.appendChild(card);
+            // Notes Col always visible (grid)
+            noteItems.forEach(item => {
+                const card = createCard(item, false);
+                notesCol.appendChild(card);
             });
         }
+    }
+    
+    function createCard(item, isFolder) {
+        const card = document.createElement('div');
+        card.draggable = true; // For DnD
+        card.dataset.id = item.id;
+        card.dataset.type = item.type || 'note';
+        
+        if (isFolder) {
+            // Folder Card
+            card.className = 'card folder-card animate-fade-in droptarget';
+            card.innerHTML = `
+                <div class="folder-icon">📁</div>
+                <div class="folder-name">${item.title}</div>
+                <div class="folder-actions">
+                        <button class="btn-icon-sm btn-edit-folder" title="Renombrar">✎</button>
+                        <button class="btn-icon-sm btn-del-folder" title="Eliminar">🗑</button>
+                </div>
+            `;
+            
+            // Folder click -> Enter
+            card.addEventListener('click', (e) => {
+                if(e.target.closest('button')) return; // ignore actions
+                currentFolderId = item.id;
+                render(store.getState());
+            });
+            
+            // DnD Events for Folder (Target)
+            card.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                card.style.borderColor = '#6366f1';
+            });
+            card.addEventListener('dragleave', () => {
+                card.style.borderColor = '';
+            });
+            card.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    card.style.borderColor = '';
+                    const draggedId = e.dataTransfer.getData('text/plain');
+                    if(draggedId && draggedId !== item.id) {
+                        NoteActions.moveItem(activeAgendaId, draggedId, item.id);
+                    }
+            });
+
+            // Rename
+            const btnRename = card.querySelector('.btn-edit-folder');
+            btnRename.addEventListener('click', () => {
+                    editingFolderId = item.id;
+                    folderTitle.innerText = 'Renombrar Carpeta';
+                    folderInput.value = item.title;
+                    folderDialog.showModal();
+            });
+            
+            // Delete
+            const btnDel = card.querySelector('.btn-del-folder');
+            btnDel.addEventListener('click', () => {
+                    deletingFolderId = item.id;
+                    delFolderNameDisplay.innerText = item.title;
+                    delFolderDialog.showModal();
+            });
+
+        } else {
+            // Note Card
+            card.className = 'card note-card animate-fade-in';
+            const prev = item.content || '';
+            card.innerHTML = `
+                ${item.title ? `<div class="card-title">${item.title}</div>` : ''}
+                <div class="card-preview">${prev || '<span style="opacity:0.4; font-style:italic">Nota vacía</span>'}</div>
+            `;
+            card.addEventListener('click', () => openEditor(item));
+        }
+        
+        // Drag Start
+        card.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', item.id);
+        });
+        
+        return card;
     }
     
     function renderBreadcrumbs(allNotes) {
@@ -412,13 +577,46 @@
          }
     });
 
+    // Create Folder Click
     btnCreateFolder.addEventListener('click', () => {
          if(activeAgendaId) {
-             const name = prompt('Nombre de la carpeta:');
-             if(name) {
-                 NoteActions.createFolder(activeAgendaId, name, currentFolderId);
-             }
+             editingFolderId = null;
+             folderTitle.innerText = 'Nueva Carpeta';
+             folderInput.value = '';
+             folderDialog.showModal();
+             setTimeout(() => folderInput.focus(), 50);
          }
+    });
+
+    // Enter to submit Folder
+    folderInput.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter') {
+            e.preventDefault();
+            btnSaveFolder.click();
+        }
+    });
+
+    // Save Folder (Create/Rename)
+    btnSaveFolder.addEventListener('click', (e) => {
+        e.preventDefault();
+        const name = folderInput.value;
+        if(name && activeAgendaId) {
+            if(editingFolderId) {
+                NoteActions.updateNote(activeAgendaId, editingFolderId, { title: name });
+            } else {
+                NoteActions.createFolder(activeAgendaId, name, currentFolderId);
+            }
+            folderDialog.close();
+        }
+    });
+
+    // Confirm Delete Folder
+    btnConfirmDelFolder.addEventListener('click', (e) => {
+        e.preventDefault();
+        if(deletingFolderId && activeAgendaId) {
+            NoteActions.deleteItem(activeAgendaId, deletingFolderId);
+            delFolderDialog.close();
+        }
     });
 
     function handleInput() {
@@ -436,12 +634,20 @@
     titleIn.addEventListener('input', handleInput);
     contentIn.addEventListener('input', handleInput);
 
+    // Delete Note (Triggers Modal)
     btnDelete.addEventListener('click', () => {
+        if(currentNoteId) {
+            delNoteDialog.showModal();
+        }
+    });
+
+    // Confirm Delete Note
+    btnConfirmDelNote.addEventListener('click', (e) => {
+        e.preventDefault();
         if(currentNoteId && activeAgendaId) {
-            if(confirm('¿Eliminar nota?')) {
-                NoteActions.deleteItem(activeAgendaId, currentNoteId);
-                dialog.close();
-            }
+            NoteActions.deleteItem(activeAgendaId, currentNoteId);
+            delNoteDialog.close();
+            dialog.close(); // Close editor
         }
     });
 

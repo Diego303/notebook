@@ -54,6 +54,85 @@
             <div id="modal-entry-content" class="modal-entry-content"></div>
         </div>
     </dialog>
+
+    <!-- Rename Journal Modal -->
+    <dialog id="rename-journal-modal" class="modal">
+        <div class="modal-wrapper">
+             <header class="modal-header">
+                <h3>Renombrar Journal</h3>
+            </header>
+            <div class="modal-body">
+                <input type="text" id="rename-input" class="input-modal" placeholder="Nuevo nombre..." />
+            </div>
+            <div style="padding: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button id="btn-rename-cancel" class="btn btn-ghost">Cancelar</button>
+                <button id="btn-rename-ok" class="btn btn-primary">Guardar</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Confirm Action Modal -->
+    <dialog id="journal-confirm-modal" class="modal">
+         <div class="modal-wrapper">
+            <header class="modal-header">
+                <h3 id="journal-confirm-title">Confirmar</h3>
+            </header>
+            <div class="modal-body">
+                <p id="journal-confirm-message" style="color: var(--color-text-main);">¿Estás seguro?</p>
+            </div>
+            <div style="padding: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button id="journal-btn-confirm-cancel" class="btn btn-ghost">Cancelar</button>
+                <button id="journal-btn-confirm-ok" class="btn btn-primary btn-danger">Confirmar</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Create Journal Modal -->
+    <dialog id="create-journal-modal" class="modal">
+        <div class="modal-wrapper">
+             <header class="modal-header">
+                <h3>Nuevo Journal</h3>
+            </header>
+            <div class="modal-body">
+                <input type="text" id="create-input" class="input-modal" placeholder="Nombre del journal..." />
+            </div>
+            <div style="padding: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button id="btn-create-cancel" class="btn btn-ghost">Cancelar</button>
+                <button id="btn-create-ok" class="btn btn-primary">Crear</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Alert Modal (Generic/Single Action) -->
+    <dialog id="journal-alert-modal" class="modal">
+        <div class="modal-wrapper">
+             <header class="modal-header">
+                <h3 id="journal-alert-title">Atención</h3>
+            </header>
+            <div class="modal-body">
+                <p id="journal-alert-message" style="color: var(--color-text-main);">Mensaje de alerta...</p>
+            </div>
+            <div style="padding: 1.5rem; display: flex; justify-content: flex-end;">
+                <button id="journal-btn-alert-ok" class="btn btn-primary">Entendido</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Confirm Entry Delete Modal -->
+    <dialog id="entry-confirm-modal" class="modal">
+         <div class="modal-wrapper">
+            <header class="modal-header">
+                <h3>Eliminar Entrada</h3>
+            </header>
+            <div class="modal-body">
+                <p style="color: var(--color-text-main);">¿Estás seguro de que deseas eliminar esta entrada?</p>
+            </div>
+            <div style="padding: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button id="entry-btn-confirm-cancel" class="btn btn-ghost">Cancelar</button>
+                <button id="entry-btn-confirm-ok" class="btn btn-primary btn-danger">Eliminar</button>
+            </div>
+        </div>
+    </dialog>
 </div>
 
 <style>
@@ -184,6 +263,28 @@
     .control-btn.major:hover { background: var(--color-primary-hover); }
     .control-btn.danger:hover { color: var(--color-danger); background: rgba(239, 68, 68, 0.1); }
 
+    /* Generic Modals */
+    dialog.modal {
+        max-width: 500px; width: 90%; background: transparent; border: none; padding: 0;
+        margin: auto;
+    }
+    dialog.modal::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+    
+    .modal-wrapper {
+        background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: 16px; box-shadow: var(--shadow-hover); overflow: hidden;
+    }
+    
+    .modal-header { padding: 1.5rem; background: var(--color-bg-elevated); border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { margin: 0; color: var(--color-text-main); font-size: 1.25rem; font-weight: 700; }
+    
+    .modal-body { padding: 1.5rem; }
+    
+    .input-modal { 
+        width: 100%; background: var(--color-bg-input, var(--color-bg-base)); 
+        border: 1px solid var(--color-border); padding: 0.75rem; border-radius: 8px; 
+        color: var(--color-text-main); font-size: 1rem; 
+    }
+    .input-modal:focus { border-color: var(--color-primary); outline: none; }
     /* Entry View Modal */
     .entry-modal {
         max-width: 700px;
@@ -353,32 +454,170 @@
         entryModal.showModal();
     }
 
-    // Journal Management
+    // Modals References
+    const renameModal = document.getElementById('rename-journal-modal');
+    const createModal = document.getElementById('create-journal-modal');
+    const confirmModal = document.getElementById('journal-confirm-modal');
+    
+    // Rename Inputs
+    const renameInput = document.getElementById('rename-input');
+    const btnRenameCancel = document.getElementById('btn-rename-cancel');
+    const btnRenameOk = document.getElementById('btn-rename-ok');
+
+    // Create Inputs
+    const createInput = document.getElementById('create-input');
+    const btnCreateCancel = document.getElementById('btn-create-cancel');
+    const btnCreateOk = document.getElementById('btn-create-ok');
+
+    // Confirm Inputs (Journal)
+    const confirmTitle = document.getElementById('journal-confirm-title');
+    const confirmMessage = document.getElementById('journal-confirm-message');
+    const btnConfirmCancel = document.getElementById('journal-btn-confirm-cancel');
+    const btnConfirmOk = document.getElementById('journal-btn-confirm-ok');
+    
+    // Alert Modal Refs
+    const alertModal = document.getElementById('journal-alert-modal');
+    const alertTitle = document.getElementById('journal-alert-title');
+    const alertMessage = document.getElementById('journal-alert-message');
+    const btnAlertOk = document.getElementById('journal-btn-alert-ok');
+
+    // Entry Confirm Modal Refs
+    const entryConfirmModal = document.getElementById('entry-confirm-modal');
+    const btnEntryConfirmCancel = document.getElementById('entry-btn-confirm-cancel');
+    const btnEntryConfirmOk = document.getElementById('entry-btn-confirm-ok');
+    
+    let onEntryConfirmCallback = null;
+
+    let onConfirmCallback = null;
+
+    // --- Helper Functions ---
+    
+    function showConfirm(title, message, callback) {
+        confirmTitle.innerText = title;
+        confirmMessage.innerText = message;
+        onConfirmCallback = callback;
+        confirmModal.showModal();
+    }
+    
+    function closeConfirm() {
+        onConfirmCallback = null;
+        confirmModal.close();
+    }
+
+    // Modals Event Listeners
+    // 1. Generic Journal Confirm
+    btnConfirmCancel.addEventListener('click', closeConfirm);
+    btnConfirmOk.addEventListener('click', () => {
+        if (onConfirmCallback) onConfirmCallback();
+        closeConfirm();
+    });
+    confirmModal.addEventListener('click', (e) => {
+        if(e.target === confirmModal) closeConfirm();
+    });
+
+    // 2. Alert Modal
+    function showAlert(title, message) {
+        alertTitle.innerText = title;
+        alertMessage.innerText = message;
+        alertModal.showModal();
+    }
+    btnAlertOk.addEventListener('click', () => {
+        alertModal.close();
+    });
+    alertModal.addEventListener('click', (e) => {
+        if(e.target === alertModal) alertModal.close();
+    });
+
+    // 3. Entry Confirm Modal
+    function showEntryConfirm(callback) {
+        onEntryConfirmCallback = callback;
+        entryConfirmModal.showModal();
+    }
+    
+    function closeEntryConfirm() {
+        onEntryConfirmCallback = null;
+        entryConfirmModal.close();
+    }
+
+    btnEntryConfirmCancel.addEventListener('click', closeEntryConfirm);
+    btnEntryConfirmOk.addEventListener('click', () => {
+        if(onEntryConfirmCallback) onEntryConfirmCallback();
+        closeEntryConfirm();
+    });
+    entryConfirmModal.addEventListener('click', (e) => {
+        if(e.target === entryConfirmModal) closeEntryConfirm();
+    });
+
+
+    // --- JOURNAL MANAGEMENT ---
+
+    // 1. Create Journal
     btnNew.addEventListener('click', () => {
-         const name = prompt("Nombre del Nuevo Journal:", "Registro Diario");
-         if(name && activeAgendaId) {
+        createInput.value = '';
+        createModal.showModal();
+        setTimeout(()=>createInput.focus(), 100);
+    });
+
+    function handleCreate() {
+        const name = createInput.value.trim();
+        if(name && activeAgendaId) {
              JournalActions.createJournal(activeAgendaId, name);
-         }
+             createModal.close();
+        }
+    }
+
+    btnCreateOk.addEventListener('click', handleCreate);
+    btnCreateCancel.addEventListener('click', () => createModal.close());
+    createInput.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter') handleCreate();
+    });
+    createModal.addEventListener('click', (e) => {
+        if(e.target === createModal) createModal.close();
     });
     
+    // 2. Rename Journal
     btnRename.addEventListener('click', () => {
         const journal = journalsCache.find(j => j.id === currentJournalId);
+        if(!journal) return;
+        renameInput.value = journal.name;
+        renameModal.showModal();
+        setTimeout(()=>renameInput.focus(), 100);
+    });
+
+    function handleRename() {
+        const journal = journalsCache.find(j => j.id === currentJournalId);
         if(!journal || !activeAgendaId) return;
-        const newName = prompt("Renombrar Journal:", journal.name);
+        
+        const newName = renameInput.value.trim();
         if(newName && newName !== journal.name) {
             JournalActions.renameJournal(activeAgendaId, currentJournalId, newName);
         }
+        renameModal.close();
+    }
+
+    btnRenameOk.addEventListener('click', handleRename);
+    btnRenameCancel.addEventListener('click', () => renameModal.close());
+    renameInput.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter') handleRename();
     });
-    
+    renameModal.addEventListener('click', (e) => {
+        if(e.target === renameModal) renameModal.close();
+    });
+
+    // 3. Delete Journal
     btnDelete.addEventListener('click', () => {
         if(!activeAgendaId || !currentJournalId) return;
         if(journalsCache.length <= 1) {
-            alert("No se puede eliminar el único journal.");
+        if(journalsCache.length <= 1) {
+            showAlert('Acción denegada', 'No se puede eliminar el único journal.');
             return;
         }
-        if(confirm("¿Eliminar este journal y todas sus entradas?")) {
-            JournalActions.deleteJournal(activeAgendaId, currentJournalId);
+            return;
         }
+        
+        showConfirm('Eliminar Journal', '¿Eliminar este journal y todas sus entradas?', () => {
+            JournalActions.deleteJournal(activeAgendaId, currentJournalId);
+        });
     });
 
     btnPrev.addEventListener('click', () => switchJournal(-1));
@@ -521,7 +760,9 @@
             
             item.querySelector('.btn-del-entry').addEventListener('click', (e) => {
                 e.stopPropagation();
-                if(confirm('¿Eliminar entrada?')) JournalActions.deleteEntry(activeAgendaId, entry.id, currentJournalId);
+                showEntryConfirm(() => {
+                    JournalActions.deleteEntry(activeAgendaId, entry.id, currentJournalId);
+                });
             });
             
             track.appendChild(item);
