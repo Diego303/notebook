@@ -100,9 +100,12 @@ export const JournalActions = {
                 if (ws.id === activeWsId) {
                     const agendas = ws.agendas.map(agenda => {
                         if (agenda.id === agendaId) {
+                            // Migration Logic
                             let journals = agenda.journals || [];
                             if (!agenda.journals && agenda.journal) {
-                                journals = [{ id: 'default', name: 'Main Journal', entries: agenda.journal }];
+                                journals = [{ id: 'default', name: 'Journal Principal', entries: agenda.journal }];
+                            } else if (journals.length === 0) {
+                                journals = [{ id: 'default', name: 'Journal Principal', entries: [] }];
                             }
 
                             const newJournal = {
@@ -111,6 +114,7 @@ export const JournalActions = {
                                 entries: []
                             };
 
+                            // Remove legacy key
                             const { journal, ...rest } = agenda;
                             return { ...rest, journals: [...journals, newJournal] };
                         }
@@ -132,11 +136,22 @@ export const JournalActions = {
                 if (ws.id === activeWsId) {
                     const agendas = ws.agendas.map(agenda => {
                         if (agenda.id === agendaId) {
-                            const journals = (agenda.journals || []).map(j => {
+                            // Migration Logic
+                            let journals = agenda.journals || [];
+                            if (!agenda.journals && agenda.journal) {
+                                journals = [{ id: 'default', name: 'Journal Principal', entries: agenda.journal }];
+                            } else if (journals.length === 0) {
+                                journals = [{ id: 'default', name: 'Journal Principal', entries: [] }];
+                            }
+
+                            const updatedJournals = journals.map(j => {
                                 if (j.id === journalId) return { ...j, name: newName };
                                 return j;
                             });
-                            return { ...agenda, journals };
+
+                            // Remove legacy key
+                            const { journal, ...rest } = agenda;
+                            return { ...rest, journals: updatedJournals };
                         }
                         return agenda;
                     });
@@ -156,8 +171,17 @@ export const JournalActions = {
                 if (ws.id === activeWsId) {
                     const agendas = ws.agendas.map(agenda => {
                         if (agenda.id === agendaId) {
-                            const journals = (agenda.journals || []).filter(j => j.id !== journalId);
-                            return { ...agenda, journals };
+                            // Migration Logic
+                            let journals = agenda.journals || [];
+                            if (!agenda.journals && agenda.journal) {
+                                journals = [{ id: 'default', name: 'Journal Principal', entries: agenda.journal }];
+                            }
+
+                            const updatedJournals = journals.filter(j => j.id !== journalId);
+
+                            // Remove legacy key
+                            const { journal, ...rest } = agenda;
+                            return { ...rest, journals: updatedJournals };
                         }
                         return agenda;
                     });

@@ -130,6 +130,21 @@
         </div>
     </dialog>
 
+    <!-- Confirm Action Modal -->
+    <dialog id="task-confirm-modal" class="modal">
+         <div class="modal-wrapper">
+            <header class="modal-header">
+                <h3 id="task-confirm-title">Confirmar</h3>
+            </header>
+            <div class="modal-body">
+                <p id="task-confirm-message" style="color: var(--color-text-main);">¿Estás seguro?</p>
+            </div>
+            <div style="padding: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button id="task-btn-confirm-cancel" class="btn btn-ghost">Cancelar</button>
+                <button id="task-btn-confirm-ok" class="btn btn-primary btn-danger">Confirmar</button>
+            </div>
+        </div>
+    </dialog>
 </div>
 
 <style is:global>
@@ -339,6 +354,38 @@
     const detailPrio = document.getElementById('detail-priority');
     const detailDate = document.getElementById('detail-date');
     const btnDeleteTask = document.getElementById('btn-delete-task-modal');
+    
+    // Confirm Modal Refs
+    const confirmModal = document.getElementById('task-confirm-modal');
+    const confirmTitle = document.getElementById('task-confirm-title');
+    const confirmMsg = document.getElementById('task-confirm-message');
+    const btnConfirmCancel = document.getElementById('task-btn-confirm-cancel');
+    const btnConfirmOk = document.getElementById('task-btn-confirm-ok');
+
+    let onConfirmCallback = null;
+
+    // Helper: Show Confirm
+    function showConfirm(title, message, callback) {
+        confirmTitle.innerText = title;
+        confirmMsg.innerText = message;
+        onConfirmCallback = callback;
+        confirmModal.showModal();
+    }
+    
+    function closeConfirm() {
+        onConfirmCallback = null;
+        confirmModal.close();
+    }
+
+    btnConfirmCancel.addEventListener('click', closeConfirm);
+    btnConfirmOk.addEventListener('click', () => {
+        if(onConfirmCallback) onConfirmCallback();
+        closeConfirm();
+    });
+    // Click outside
+    confirmModal.addEventListener('click', (e) => {
+        if(e.target === confirmModal) closeConfirm();
+    });
 
     // State
     let currentOpenTaskId = null;
@@ -346,7 +393,9 @@
     let activeAgendaId = null;
 
     // --- 1. Creation Form Logic ---
-    inputTitle.addEventListener('focus', () => advancedControls.classList.remove('hidden'));
+    if(inputTitle) {
+        inputTitle.addEventListener('focus', () => advancedControls.classList.remove('hidden'));
+    }
 
     // Collapse if clicking outside and empty
     document.addEventListener('click', (e) => {
@@ -532,9 +581,9 @@
         if(finalizeBtn) {
             finalizeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if(confirm('¿Finalizar esta tarea? Se archivará.')) {
+                showConfirm('Finalizar Tarea', '¿Finalizar esta tarea? Se archivará.', () => {
                     TaskActions.finalizeTask(activeAgendaId, task.id);
-                }
+                });
             });
         }
 
@@ -542,9 +591,9 @@
         if(recycleBtn) {
             recycleBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if(confirm('¿Mover a la papelera?')) {
+                showConfirm('Papelera', '¿Mover a la papelera?', () => {
                     TaskActions.recycleTask(activeAgendaId, task.id);
-                }
+                });
             });
         }
 
@@ -560,9 +609,9 @@
         if(permDelBtn) {
            permDelBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if(confirm('¿Eliminar definitivamente? Esto no se puede deshacer.')) {
-                    TaskActions.permanentDeleteTask(activeAgendaId, task.id);
-                }
+                showConfirm('Eliminar Definitivamente', '¿Esta acción no se puede deshacer.', () => {
+                   TaskActions.permanentDeleteTask(activeAgendaId, task.id);
+                });
             }); 
         }
 
@@ -607,10 +656,10 @@
     });
 
     btnDeleteTask.addEventListener('click', () => {
-        if(confirm('¿Mover a la papelera?')) {
-            TaskActions.recycleTask(activeAgendaId, currentOpenTaskId);
-            dialog.close();
-        }
+        showConfirm('Papelera', '¿Mover a la papelera?', () => {
+             TaskActions.recycleTask(activeAgendaId, currentOpenTaskId);
+             dialog.close();
+        });
     });
 
     // --- DRAG DROP ---

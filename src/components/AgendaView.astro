@@ -48,7 +48,8 @@ import MetricsDashboard from './MetricsDashboard.astro';
                 </nav>
             </div>
             <div class="header-actions">
-                 <button id="btn-agenda-settings" class="btn btn-ghost btn-sm">⚙️</button>
+                 <button id="btn-edit-agenda" class="btn btn-ghost btn-sm" title="Renombrar Agenda">✏️</button>
+                 <button id="btn-delete-agenda" class="btn btn-ghost btn-sm btn-icon-danger" title="Eliminar Agenda">🗑️</button>
             </div>
         </header>
 
@@ -71,14 +72,26 @@ import MetricsDashboard from './MetricsDashboard.astro';
         </main>
     </div>
 
-    <!-- Create Agenda Modal -->
+    <!-- Modal Create/Rename Agenda -->
     <dialog id="agenda-dialog" class="modal">
         <form method="dialog">
-            <h2 style="color: var(--color-text-main);">Nueva Agenda</h2>
+            <h2 id="agenda-dialog-title">Nueva Agenda</h2>
             <input type="text" id="agenda-name-input" placeholder="ej. Planificación Q4, Proyecto Alfa" required autocomplete="off" />
             <div class="modal-actions">
                 <button value="cancel" class="btn btn-ghost" formnovalidate>Cancelar</button>
                 <button id="btn-save-agenda" value="save" class="btn btn-primary">Crear Agenda</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Modal Delete Agenda -->
+    <dialog id="delete-agenda-dialog" class="modal">
+        <form method="dialog">
+            <h2>¿Eliminar Agenda?</h2>
+            <p style="margin-bottom: 1.5rem; color: var(--color-text-muted);">Esta acción borrará todas las notas, tareas, journals y métricas de esta agenda.</p>
+            <div class="modal-actions">
+                <button value="cancel" class="btn btn-ghost">Cancelar</button>
+                <button id="btn-confirm-delete-agenda" value="delete" class="btn btn-danger">Eliminar Agenda</button>
             </div>
         </form>
     </dialog>
@@ -89,6 +102,32 @@ import MetricsDashboard from './MetricsDashboard.astro';
 .agenda-view-container {
     width: 100%;
     height: 100%;
+}
+
+/* Modal Styling */
+.modal {
+    margin: auto;
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    background: var(--color-bg-card);
+    box-shadow: var(--shadow-card);
+    max-width: 400px;
+    width: 90%;
+    color: var(--color-text-main);
+}
+
+.modal::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+.modal[open] {
+    animation: fade-in 0.2s ease-out;
+}
+
+.modal h2 {
+    color: var(--color-text-main);
 }
 
 /* Dashboard Styles (Reusing generic centered-view/grid-cards from global, adding specific override if needed) */
@@ -180,6 +219,17 @@ import MetricsDashboard from './MetricsDashboard.astro';
     color: var(--color-text-muted);
 }
 
+/* Header Actions */
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon-danger:hover {
+    color: var(--color-danger);
+    background: rgba(239, 68, 68, 0.1);
+}
+
 /* Responsive Agenda View */
 @media (max-width: 768px) {
     .detail-header {
@@ -231,12 +281,21 @@ import MetricsDashboard from './MetricsDashboard.astro';
   const btnCreate = document.getElementById('btn-create-agenda');
   const btnBackWs = document.getElementById('btn-back-ws');
   const btnCloseAgenda = document.getElementById('btn-close-agenda');
-  const btnSettings = document.getElementById('btn-agenda-settings'); // For delete/rename later
   
-  // Modal
+  const btnEditAgenda = document.getElementById('btn-edit-agenda');
+  const btnDeleteAgenda = document.getElementById('btn-delete-agenda');
+  
+  // Modals
   const dialog = document.getElementById('agenda-dialog');
   const nameInput = document.getElementById('agenda-name-input');
   const btnSave = document.getElementById('btn-save-agenda');
+  const dialogTitle = document.getElementById('agenda-dialog-title');
+
+  const deleteDialog = document.getElementById('delete-agenda-dialog');
+  const confirmDeleteBtn = document.getElementById('btn-confirm-delete-agenda');
+
+  // State
+  let isEditing = false;
 
   // Logic
   function render(state) {
@@ -303,11 +362,45 @@ import MetricsDashboard from './MetricsDashboard.astro';
       AgendaActions.selectAgenda(null);
   });
   
-  // Create Agenda
-  btnCreate.addEventListener('click', () => {
+  // Create / Edit Agenda Logic
+  function openAgendaModal(editMode = false) {
+      isEditing = editMode;
       nameInput.value = '';
-      nameInput.value = '';
+      
+      if (editMode) {
+          dialogTitle.innerText = 'Renombrar Agenda';
+          btnSave.innerText = 'Renombrar';
+          // Pre-fill name
+          const state = store.getState();
+          const ws = state.workspaces.find(w => w.id === state.activeWorkspaceId);
+          const agenda = ws?.agendas.find(a => a.id === state.activeAgendaId);
+          if(agenda) nameInput.value = agenda.name;
+      } else {
+          dialogTitle.innerText = 'Nueva Agenda';
+          btnSave.innerText = 'Crear Agenda';
+      }
+      
       dialog.showModal();
+  }
+
+  btnCreate.addEventListener('click', () => openAgendaModal(false));
+  btnEditAgenda.addEventListener('click', () => openAgendaModal(true));
+
+  // Edit / Save Confirm
+  btnSave.addEventListener('click', (e) => {
+      e.preventDefault();
+      const val = nameInput.value;
+      if (val) {
+          if (isEditing) {
+              const state = store.getState();
+              if (state.activeAgendaId) {
+                  AgendaActions.renameAgenda(state.activeAgendaId, val);
+              }
+          } else {
+              AgendaActions.createAgenda(val);
+          }
+          dialog.close();
+      }
   });
 
   // Enter to submit
@@ -318,23 +411,19 @@ import MetricsDashboard from './MetricsDashboard.astro';
       }
   });
   
-  btnSave.addEventListener('click', (e) => {
-      e.preventDefault();
-      const val = nameInput.value;
-      if (val) {
-          AgendaActions.createAgenda(val);
-          dialog.close();
-      }
+  // Delete Agenda
+  btnDeleteAgenda.addEventListener('click', () => {
+      deleteDialog.showModal();
   });
 
-  // Delete Agenda Hook (placeholder via long press or settings?)
-  btnSettings.addEventListener('click', () => {
-     // TODO: Better menu. For now simple confirm delete active.
-     const state = store.getState();
-     if(state.activeAgendaId && confirm('¿Eliminar esta agenda?')) {
+  confirmDeleteBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const state = store.getState();
+      if(state.activeAgendaId) {
           AgendaActions.deleteAgenda(state.activeAgendaId);
-          AgendaActions.selectAgenda(null);
-     }
+          AgendaActions.selectAgenda(null); // Go back to dashboard
+      }
+      deleteDialog.close();
   });
 
   // Tab Switching
