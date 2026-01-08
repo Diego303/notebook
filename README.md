@@ -24,11 +24,11 @@
 
 ### Desarrollado con IA
 
-Este proyecto fue desarrollado íntegramente utilizando **[Google Antigravity](https://cloud.google.com/gemini)**, un editor de código potenciado por IA de Google. La asistencia de IA permitió:
+Este proyecto fue desarrollado íntegramente utilizando **[Google Antigravity](https://antigravity.google/)**, un editor de código potenciado por IA de Google. La asistencia de IA permitió:
 
 - Diseño de arquitectura de estado robusta
 - Implementación de validación profunda de datos
-- Sistema de temas con 7 paletas de colores
+- Sistema de temas con 13 paletas de colores
 - Localización completa a español
 - Métricas automáticas calculadas desde los datos
 
@@ -63,6 +63,9 @@ Cada agenda es un contenedor completo con todas las herramientas:
 - **Búsqueda en tiempo real** por título o contenido
 - **Breadcrumbs** para navegación jerárquica
 - **Auto-guardado** mientras escribes
+- **Editor Ultra-Ancho** (1000px) para máxima comodidad
+- **Tarjetas Uniformes** con altura fija para orden visual
+- **Interfaz Limpia** sin barras de desplazamiento visibles
 
 ---
 
@@ -107,8 +110,11 @@ Guarda fragmentos de código reutilizables:
 - **Título y descripción**
 - **Lenguaje de programación** (JavaScript, Python, CSS, etc.)
 - **Tags** para categorizar
-- **Copiar al portapapeles** con un clic
-- **Búsqueda** por título, código o tags
+- **Gestaor de Snippets** con diseño de tarjetas cuadradas uniformes
+- **Vista Previa Inteligente** de 5 líneas de código
+- **Copiar al portapapeles** con feedback visual
+- **Editor Sólido** con área de código no redimensionable
+- **Scroll Invisible** en previsualización y edición
 
 ---
 
@@ -144,6 +150,16 @@ Cambia la apariencia de toda la aplicación con un clic:
 | 💎 **Ruby** | Oscuro | Acentos rojo rubí |
 | 🌲 **Forest** | Oscuro | Verdes naturales |
 | 🌅 **Sunset** | Claro | Naranjas cálidos |
+| 🐉 **Yakuza** | Claro | Estética japonesa: blanco puro y rojo carmesí |
+| 🚀 **Neon** | Oscuro | Cyberpunk: fondo negro y neones cyan/rosa |
+| 🎃 **Halloween** | Oscuro | Negro, morado y naranja calabaza |
+| 🎄 **Navidad** | Claro | Crema con rojo y verde festivo |
+| 📽️ **Noir** | Mixto | Blanco y negro puro, alto contraste |
+| 🌸 **Sakura** | Claro | Rosa suave con acentos fucsia |
+
+### Mejoras UX
+- **Interacción por Clic**: El selector ahora se abre al hacer clic, evitando cierres accidentales.
+- **Indicador Dinámico**: El botón de tema muestra el color activo en tiempo real.
 
 El tema seleccionado se guarda automáticamente y persiste entre sesiones.
 
@@ -255,18 +271,14 @@ src/
 ## 🚀 Instalación
 
 ```bash
-# Clonar el repositorio
-git clone https://github.com/diego/notebook.git
-cd notebook
-
 # Instalar dependencias
-npm install
+pnpm install
 
 # Ejecutar en desarrollo
-npm run dev
+pnpm run dev
 
 # Construir para producción
-npm run build
+pnpm run build
 ```
 
 ---
