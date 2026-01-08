@@ -268,6 +268,207 @@
   --shadow-hover: 0 10px 15px -3px rgb(234 88 12 / 0.15);
 }
 
+/* ============================================
+   THEME: Yakuza (White & Crimson Red)
+   ============================================ */
+[data-theme="yakuza"] {
+  --color-primary: #be123c;
+  --color-primary-hover: #9f1239;
+  --color-primary-light: rgba(190, 18, 60, 0.1);
+  --color-secondary: #e11d48;
+
+  --color-bg-base: #ffffff;
+  --color-bg-card: #f8fafc;
+  --color-bg-elevated: #f1f5f9;
+  --color-bg-input: #ffffff;
+  --color-text-main: #111827;
+  --color-text-muted: #4b5563;
+  --color-text-inverted: #ffffff;
+  --color-border: #e2e8f0;
+  --color-border-focus: #be123c;
+
+  --color-success: #059669;
+  --color-danger: #e11d48;
+  --color-warning: #d97706;
+
+  --color-prio-high: #9f1239;
+  --color-prio-high-bg: rgba(159, 18, 57, 0.1);
+  --color-prio-medium: #111827;
+  --color-prio-medium-bg: rgba(17, 24, 39, 0.05);
+  --color-prio-low: #4b5563;
+  --color-prio-low-bg: rgba(75, 85, 99, 0.05);
+
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   THEME: Neon (Cyberpunk Night)
+   ============================================ */
+[data-theme="neon"] {
+  --color-primary: #00ffcc;
+  --color-primary-hover: #00e6b8;
+  --color-primary-light: rgba(0, 255, 204, 0.2);
+  --color-secondary: #ff00ff;
+
+  --color-bg-base: #050505;
+  --color-bg-card: #0d0d0d;
+  --color-bg-elevated: #1a1a1a;
+  --color-bg-input: #000000;
+  --color-text-main: #e0e0e0;
+  --color-text-muted: #888888;
+  --color-text-inverted: #000000;
+  --color-border: #333333;
+  --color-border-focus: #00ffcc;
+
+  --color-success: #39ff14;
+  --color-danger: #ff3131;
+  --color-warning: #ffea00;
+
+  --color-prio-high: #ff3131;
+  --color-prio-high-bg: rgba(255, 49, 49, 0.2);
+  --color-prio-medium: #ffea00;
+  --color-prio-medium-bg: rgba(255, 234, 0, 0.2);
+  --color-prio-low: #00ffcc;
+  --color-prio-low-bg: rgba(0, 255, 204, 0.2);
+
+  --shadow-card: 0 0 10px rgba(0, 255, 204, 0.1);
+  --shadow-hover: 0 0 20px rgba(255, 0, 255, 0.2);
+}
+
+/* ============================================
+   THEME: Halloween (Spooky Night)
+   ============================================ */
+[data-theme="halloween"] {
+  --color-primary: #f97316;
+  --color-primary-hover: #ea580c;
+  --color-primary-light: rgba(249, 115, 22, 0.15);
+  --color-secondary: #a855f7;
+
+  --color-bg-base: #0c0a09;
+  --color-bg-card: #1c1917;
+  --color-bg-elevated: #292524;
+  --color-bg-input: #0c0a09;
+  --color-text-main: #f5f5f4;
+  --color-text-muted: #a8a29e;
+  --color-text-inverted: #0c0a09;
+  --color-border: #44403c;
+  --color-border-focus: #f97316;
+
+  --color-success: #22c55e;
+  --color-danger: #ef4444;
+  --color-warning: #eab308;
+
+  --color-prio-high: #f97316;
+  --color-prio-high-bg: rgba(249, 115, 22, 0.2);
+  --color-prio-medium: #a855f7;
+  --color-prio-medium-bg: rgba(168, 85, 247, 0.2);
+  --color-prio-low: #78350f;
+  --color-prio-low-bg: rgba(120, 53, 15, 0.2);
+
+  --shadow-card: 0 4px 6px -1px rgba(249, 115, 22, 0.1);
+}
+
+/* ============================================
+   THEME: Christmas (Festive)
+   ============================================ */
+[data-theme="christmas"] {
+  --color-primary: #dc2626;
+  --color-primary-hover: #b91c1c;
+  --color-primary-light: rgba(220, 38, 38, 0.1);
+  --color-secondary: #059669;
+
+  --color-bg-base: #fefce8;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #ecfdf5;
+  --color-bg-input: #ffffff;
+  --color-text-main: #064e3b;
+  --color-text-muted: #059669;
+  --color-text-inverted: #ffffff;
+  --color-border: #bbf7d0;
+  --color-border-focus: #dc2626;
+
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+  --color-warning: #eab308;
+
+  --color-prio-high: #dc2626;
+  --color-prio-high-bg: rgba(220, 38, 38, 0.1);
+  --color-prio-medium: #ca8a04;
+  --color-prio-medium-bg: rgba(202, 138, 4, 0.1);
+  --color-prio-low: #059669;
+  --color-prio-low-bg: rgba(5, 150, 105, 0.1);
+
+  --shadow-card: 0 4px 6px -1px rgba(220, 38, 38, 0.1);
+}
+
+/* ============================================
+   THEME: Black & White (Noir)
+   ============================================ */
+[data-theme="bw"] {
+  --color-primary: #000000;
+  --color-primary-hover: #1a1a1a;
+  --color-primary-light: rgba(0, 0, 0, 0.1);
+  --color-secondary: #ffffff;
+
+  --color-bg-base: #ffffff;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #f3f4f6;
+  --color-bg-input: #ffffff;
+  --color-text-main: #000000;
+  --color-text-muted: #666666;
+  --color-text-inverted: #ffffff;
+  --color-border: #000000;
+  --color-border-focus: #333333;
+
+  --color-success: #000000;
+  --color-danger: #000000;
+  --color-warning: #000000;
+
+  --color-prio-high: #000000;
+  --color-prio-high-bg: rgba(0, 0, 0, 0.05);
+  --color-prio-medium: #666666;
+  --color-prio-medium-bg: rgba(0, 0, 0, 0.02);
+  --color-prio-low: #999999;
+  --color-prio-low-bg: rgba(0, 0, 0, 0.01);
+
+  --shadow-card: 0 0 0 1px #000000;
+  --shadow-hover: 4px 4px 0 0 #000000;
+}
+
+/* ============================================
+   THEME: Floral Japanese (Sakura)
+   ============================================ */
+[data-theme="floral"] {
+  --color-primary: #f472b6;
+  --color-primary-hover: #ec4899;
+  --color-primary-light: rgba(244, 114, 182, 0.1);
+  --color-secondary: #fbcfe8;
+
+  --color-bg-base: #fff1f2;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #ffe4e6;
+  --color-bg-input: #ffffff;
+  --color-text-main: #881337;
+  --color-text-muted: #be185d;
+  --color-text-inverted: #ffffff;
+  --color-border: #fda4af;
+  --color-border-focus: #f472b6;
+
+  --color-success: #059669;
+  --color-danger: #e11d48;
+  --color-warning: #d97706;
+
+  --color-prio-high: #9f1239;
+  --color-prio-high-bg: rgba(159, 18, 57, 0.1);
+  --color-prio-medium: #be185d;
+  --color-prio-medium-bg: rgba(190, 24, 93, 0.1);
+  --color-prio-low: #db2777;
+  --color-prio-low-bg: rgba(219, 39, 119, 0.1);
+
+  --shadow-card: 0 4px 6px -1px rgba(244, 114, 182, 0.1);
+}
+
+
 /* Reset & Base */
 *,
 *::before,

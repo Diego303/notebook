@@ -3,33 +3,60 @@
 ---
 
 <div id="workspace-selector" class="centered-view animate-fade-in">
-  <!-- Theme Selector Panel -->
-  <div class="theme-panel" id="theme-panel">
-    <span class="theme-label">🎨</span>
-    <div class="theme-options">
-      <button class="theme-btn" data-theme="dark" title="Oscuro (Default)">
-        <span class="theme-dot" style="background: linear-gradient(135deg, #818cf8, #0f172a);"></span>
-      </button>
-      <button class="theme-btn" data-theme="light" title="Claro">
-        <span class="theme-dot" style="background: linear-gradient(135deg, #4f46e5, #f8fafc);"></span>
-      </button>
-      <button class="theme-btn" data-theme="ocean" title="Océano">
-        <span class="theme-dot" style="background: linear-gradient(135deg, #0284c7, #f0f9ff);"></span>
-      </button>
-      <button class="theme-btn" data-theme="pastel" title="Pastel">
-        <span class="theme-dot" style="background: linear-gradient(135deg, #7c3aed, #faf5ff);"></span>
-      </button>
-      <button class="theme-btn" data-theme="ruby" title="Rubí">
-        <span class="theme-dot" style="background: linear-gradient(135deg, #fb7185, #18181b);"></span>
-      </button>
-      <button class="theme-btn" data-theme="forest" title="Bosque">
-        <span class="theme-dot" style="background: linear-gradient(135deg, #4ade80, #052e16);"></span>
-      </button>
-      <button class="theme-btn" data-theme="sunset" title="Atardecer">
-        <span class="theme-dot" style="background: linear-gradient(135deg, #ea580c, #fffbeb);"></span>
-      </button>
+  <!-- Theme Selector Panel (Hover to Expand) -->
+  <div class="theme-panel-container" id="theme-panel-container">
+    <div class="theme-trigger" id="theme-trigger">
+        <span class="theme-label">🎨</span>
+        <button class="theme-btn active" id="current-theme-btn">
+            <span class="theme-dot" id="current-theme-dot"></span>
+        </button>
+    </div>
+    <div class="theme-dropdown-panel" id="theme-dropdown">
+      <div class="theme-options-grid">
+        <button class="theme-btn" data-theme="dark" title="Oscuro">
+          <span class="theme-dot" style="background: linear-gradient(135deg, #818cf8, #0f172a);"></span>
+        </button>
+        <button class="theme-btn" data-theme="light" title="Claro">
+          <span class="theme-dot" style="background: linear-gradient(135deg, #4f46e5, #f8fafc);"></span>
+        </button>
+        <button class="theme-btn" data-theme="ocean" title="Océano">
+          <span class="theme-dot" style="background: linear-gradient(135deg, #0284c7, #f0f9ff);"></span>
+        </button>
+        <button class="theme-btn" data-theme="pastel" title="Pastel">
+          <span class="theme-dot" style="background: linear-gradient(135deg, #7c3aed, #faf5ff);"></span>
+        </button>
+        <button class="theme-btn" data-theme="ruby" title="Rubí">
+          <span class="theme-dot" style="background: linear-gradient(135deg, #fb7185, #18181b);"></span>
+        </button>
+        <button class="theme-btn" data-theme="forest" title="Bosque">
+          <span class="theme-dot" style="background: linear-gradient(135deg, #4ade80, #052e16);"></span>
+        </button>
+        <button class="theme-btn" data-theme="sunset" title="Atardecer">
+          <span class="theme-dot" style="background: linear-gradient(135deg, #ea580c, #fffbeb);"></span>
+        </button>
+        <!-- New Themes -->
+        <button class="theme-btn" data-theme="yakuza" title="Yakuza">
+          <span class="theme-dot" style="background: linear-gradient(135deg, #be123c, #ffffff);"></span>
+        </button>
+        <button class="theme-btn" data-theme="neon" title="Neon">
+          <span class="theme-dot" style="background: linear-gradient(135deg, #00ffcc, #ff00ff);"></span>
+        </button>
+        <button class="theme-btn" data-theme="halloween" title="Halloween">
+          <span class="theme-dot" style="background: linear-gradient(135deg, #f97316, #a855f7);"></span>
+        </button>
+        <button class="theme-btn" data-theme="christmas" title="Navidad">
+          <span class="theme-dot" style="background: linear-gradient(135deg, #dc2626, #059669);"></span>
+        </button>
+        <button class="theme-btn" data-theme="bw" title="B&N">
+          <span class="theme-dot" style="background: linear-gradient(135deg, #000000, #ffffff);"></span>
+        </button>
+        <button class="theme-btn" data-theme="floral" title="Floral">
+          <span class="theme-dot" style="background: linear-gradient(135deg, #f472b6, #fff1f2);"></span>
+        </button>
+      </div>
     </div>
   </div>
+
 
   <div class="ws-intro">
     <h1>Bienvenido de nuevo</h1>
@@ -169,11 +196,19 @@
       color: var(--color-text-main);
   }
 
-  /* Theme Selector Panel */
-  .theme-panel {
+  /* Theme Selector Panel - Hover to Expand */
+  .theme-panel-container {
       position: fixed;
       top: var(--spacing-lg);
       right: var(--spacing-lg);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.5rem;
+  }
+
+  .theme-trigger {
       display: flex;
       align-items: center;
       gap: var(--spacing-sm);
@@ -182,7 +217,12 @@
       border-radius: var(--radius-full);
       box-shadow: var(--shadow-card);
       border: 1px solid var(--color-border);
-      z-index: 100;
+      cursor: pointer;
+      transition: all var(--transition-normal);
+  }
+
+  .theme-trigger:hover {
+      border-color: var(--color-primary);
   }
 
   .theme-label {
@@ -190,25 +230,56 @@
       user-select: none;
   }
 
-  .theme-options {
-      display: flex;
-      gap: 6px;
+  .theme-dropdown-panel {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 0.5rem;
+      background: var(--color-bg-card);
+      padding: 1.25rem;
+      border-radius: 1.25rem;
+      box-shadow: var(--shadow-hover);
+      border: 1px solid var(--color-border);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px) scale(0.95);
+      transition: all var(--transition-normal);
+      pointer-events: none;
+      width: 220px; /* Square/Rectangular look */
+  }
+
+  /* Show panel when open class is present */
+  .theme-panel-container.is-open .theme-dropdown-panel {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+  }
+
+  .theme-options-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      justify-items: center;
   }
 
   .theme-btn {
       background: none;
       border: 2px solid transparent;
-      padding: 2px;
+      padding: 3px;
       border-radius: 50%;
       cursor: pointer;
       transition: all var(--transition-fast);
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 36px;
+      height: 36px;
   }
 
   .theme-btn:hover {
       transform: scale(1.15);
+      background: var(--color-bg-elevated);
   }
 
   .theme-btn.active {
@@ -217,33 +288,26 @@
   }
 
   .theme-dot {
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       display: block;
-      box-shadow: inset 0 -2px 4px rgba(0,0,0,0.1);
+      box-shadow: inset 0 -2px 4px rgba(0,0,0,0.15);
   }
 
-  /* Modal Styling */
-  .modal {
-      margin: auto;
-      padding: 1.5rem;
-      border: 1px solid var(--color-border);
-      border-radius: 16px;
-      background: var(--color-bg-card);
-      box-shadow: var(--shadow-card);
-      max-width: 400px;
-      width: 90%;
-      color: var(--color-text-main);
-  }
-  
-  .modal::backdrop {
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
-  }
-  
-  .modal[open] {
-      animation: fade-in 0.2s ease-out;
+  /* Responsive theme panel */
+  @media (max-width: 768px) {
+      .theme-panel-container {
+          top: 0.75rem;
+          right: 0.75rem;
+      }
+      .theme-dropdown-panel {
+          width: 200px;
+          padding: 1rem;
+      }
+      .theme-options-grid {
+          grid-template-columns: repeat(3, 1fr);
+      }
   }
 </style>
 
@@ -257,9 +321,26 @@
   // ============================================
   const THEME_KEY = 'notebook_theme';
   const themeButtons = document.querySelectorAll('.theme-btn');
+  const currentThemeDot = document.getElementById('current-theme-dot');
   
   function setTheme(themeName) {
-    // 'dark' is default (no data-theme attribute needed for default)
+    // Register themes and their gradients locally for the current dot display
+    const themeGradients = {
+        dark: 'linear-gradient(135deg, #818cf8, #0f172a)',
+        light: 'linear-gradient(135deg, #4f46e5, #f8fafc)',
+        ocean: 'linear-gradient(135deg, #0284c7, #f0f9ff)',
+        pastel: 'linear-gradient(135deg, #7c3aed, #faf5ff)',
+        ruby: 'linear-gradient(135deg, #fb7185, #18181b)',
+        forest: 'linear-gradient(135deg, #4ade80, #052e16)',
+        sunset: 'linear-gradient(135deg, #ea580c, #fffbeb)',
+        yakuza: 'linear-gradient(135deg, #be123c, #ffffff)',
+        neon: 'linear-gradient(135deg, #00ffcc, #ff00ff)',
+        halloween: 'linear-gradient(135deg, #f97316, #a855f7)',
+        christmas: 'linear-gradient(135deg, #dc2626, #059669)',
+        bw: 'linear-gradient(135deg, #000000, #ffffff)',
+        floral: 'linear-gradient(135deg, #f472b6, #fff1f2)'
+    };
+
     if (!themeName || themeName === 'dark') {
       document.documentElement.removeAttribute('data-theme');
       themeName = 'dark';
@@ -268,11 +349,17 @@
     }
     localStorage.setItem(THEME_KEY, themeName);
     
-    // Update active state
+    // Update active state in panel
     themeButtons.forEach(btn => {
       btn.classList.toggle('active', btn.dataset.theme === themeName);
     });
+
+    // Update the main trigger dot
+    if (currentThemeDot && themeGradients[themeName]) {
+        currentThemeDot.style.background = themeGradients[themeName];
+    }
   }
+
   
   // Initialize theme from localStorage
   function initTheme() {
@@ -282,9 +369,27 @@
   
   // Theme button click handlers
   themeButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent closing when clicking a theme
       setTheme(btn.dataset.theme);
+      themePanelContainer.classList.remove('is-open'); // Close after selection
     });
+  });
+
+  // Toggle Panel Logic
+  const themePanelContainer = document.getElementById('theme-panel-container');
+  const themeTrigger = document.getElementById('theme-trigger');
+
+  themeTrigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    themePanelContainer.classList.toggle('is-open');
+  });
+
+  // Close on outside click
+  window.addEventListener('click', (e) => {
+    if (!themePanelContainer.contains(e.target)) {
+        themePanelContainer.classList.remove('is-open');
+    }
   });
   
   // Initialize theme immediately
